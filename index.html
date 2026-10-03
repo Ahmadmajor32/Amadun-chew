@@ -1,0 +1,1960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<meta name="theme-color" content="#0d9488" />
+<title>AHMAD CHEW ACADEMY — Community Health Digital Learning & CBT Platform</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          brand: { 50:'#f0fdfa',100:'#ccfbf1',200:'#99f6e4',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e',800:'#115e59',900:'#134e4a' }
+        },
+        fontFamily: { sans: ['Inter','system-ui','Segoe UI','Roboto','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  *{-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+  .no-scrollbar::-webkit-scrollbar{display:none}
+  .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+  .fade-in{animation:fadeIn .25s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .pulse-ring{box-shadow:0 0 0 0 rgba(20,184,166,.6);animation:pulseR 1.6s infinite}
+  @keyframes pulseR{70%{box-shadow:0 0 0 12px rgba(20,184,166,0)}100%{box-shadow:0 0 0 0 rgba(20,184,166,0)}}
+  .handout h3{font-weight:700;margin-top:1.25rem;margin-bottom:.5rem;font-size:1.05rem}
+  .handout h4{font-weight:600;margin-top:1rem;margin-bottom:.35rem}
+  .handout p{margin-bottom:.65rem;line-height:1.7}
+  .handout ul{list-style:disc;padding-left:1.4rem;margin-bottom:.75rem}
+  .handout ol{list-style:decimal;padding-left:1.4rem;margin-bottom:.75rem}
+  .handout li{margin-bottom:.3rem;line-height:1.6}
+  .handout .def{background:rgba(20,184,166,.08);border-left:4px solid #14b8a6;padding:.75rem 1rem;border-radius:.5rem;margin:.75rem 0}
+  .handout .trap{background:rgba(245,158,11,.10);border-left:4px solid #f59e0b;padding:.75rem 1rem;border-radius:.5rem;margin:.75rem 0}
+  .handout .note{background:rgba(59,130,246,.08);border-left:4px solid #3b82f6;padding:.75rem 1rem;border-radius:.5rem;margin:.75rem 0}
+  .cbt-opt{transition:all .15s ease}
+  .cbt-opt:hover{border-color:#14b8a6}
+  .qnav-btn{width:2.4rem;height:2.4rem;font-size:.8rem}
+  @media(max-width:640px){.qnav-btn{width:2.1rem;height:2.1rem;font-size:.72rem}}
+</style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased">
+
+<!-- APP ROOT -->
+<div id="app"></div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] hidden">
+  <div class="bg-slate-900 text-white text-sm px-4 py-2.5 rounded-xl shadow-2xl"></div>
+</div>
+
+<script>
+/* ============================================================================
+   AHMAD CHEW ACADEMY  —  Single-file SPA
+   By Ahmad Sani
+   Architecture: data → state → router → views → components
+   ============================================================================ */
+
+/* ============================ 1. DATA LAYER ================================ */
+
+/* ---- SOURCES ---- */
+const sources = [
+  { id:'src-chprbn', category:'Curriculum', name:'Community Health Practitioners Registration Board of Nigeria (CHPRBN)', desc:'Statutory regulator for Community Health Practitioners (JCHEW/CHEW) in Nigeria.', url:'https://chprbn.gov.ng' },
+  { id:'src-fmoh', category:'Official', name:'Federal Ministry of Health and Social Welfare, Nigeria', desc:'National health policy, PHC guidelines and programme documents.', url:'https://www.health.gov.ng' },
+  { id:'src-nphcda', category:'Official', name:'National Primary Health Care Development Agency (NPHCDA)', desc:'PHC implementation guidelines, immunisation & IMCI resources.', url:'https://nphcda.gov.ng' },
+  { id:'src-who', category:'Clinical', name:'World Health Organization (WHO)', desc:'IMCI, IPC, maternal & child health guidelines.', url:'https://www.who.int' },
+  { id:'src-unicef', category:'Clinical', name:'UNICEF', desc:'Child health, nutrition and immunisation resources.', url:'https://www.unicef.org' },
+  { id:'src-nigeria-phc', category:'Curriculum', name:'National PHC Curriculum & Community Health Training Guidelines (Nigeria)', desc:'Curricular frameworks for JCHEW and CHEW training.', url:'https://chprbn.gov.ng' }
+];
+
+/* ---- COURSES (structure — course codes are descriptive, not claimed official) ---- */
+const courses = [
+  { id:'c-phc', code:'CHP-PHC', title:'Primary Health Care', level:'JCHEW / CHEW', color:'teal', desc:'Principles, history, components and practice of Primary Health Care in Nigeria, including the Ward Health System and PHC under one roof.', objectives:['Define PHC and describe its principles','Explain the components of PHC','Describe the Nigerian PHC structure','Apply PHC principles in community practice'], topics:['t-phc-intro','t-phc-principles','t-phc-nigeria','t-phc-ward'] },
+  { id:'c-cbhc', code:'CHP-CBHC', title:'Community-Based Health Care', level:'JCHEW / CHEW', color:'emerald', desc:'Community participation, community diagnosis, CBHC implementation and the role of community structures.', objectives:['Explain CBHC concept','Conduct community diagnosis','Mobilise community participation'], topics:['t-cbhc-intro','t-cbhc-diag','t-cbhc-mobil'] },
+  { id:'c-anat', code:'CHP-ANP', title:'Anatomy and Physiology', level:'JCHEW / CHEW', color:'rose', desc:'Structure and function of the human body systems relevant to community health practice.', objectives:['Describe major body systems','Relate structure to function','Apply anatomy to clinical assessment'], topics:['t-anat-intro','t-anat-cvs','t-anat-resp','t-anat-git'] },
+  { id:'c-nut', code:'CHP-NUT', title:'Nutrition', level:'JCHEW / CHEW', color:'amber', desc:'Nutrients, nutritional assessment, malnutrition, and community nutrition programmes.', objectives:['Classify nutrients','Assess nutritional status','Manage malnutrition within scope'], topics:['t-nut-nutrients','t-nut-assessment','t-nut-malnutrition'] },
+  { id:'c-cd', code:'CHP-CD', title:'Communicable Diseases', level:'JCHEW / CHEW', color:'red', desc:'Epidemiology, prevention and control of communicable diseases of public health importance in Nigeria.', objectives:['Describe modes of transmission','Apply prevention and control measures','Identify notifiable diseases'], topics:['t-cd-intro','t-cd-malaria','t-cd-tb','t-cd-cholera'] },
+  { id:'c-ncd', code:'CHP-NCD', title:'Non-Communicable Diseases', level:'JCHEW / CHEW', color:'purple', desc:'Hypertension, diabetes, sickle cell and other NCDs with community prevention focus.', objectives:['Identify NCD risk factors','Screen and refer appropriately','Educate on lifestyle modification'], topics:['t-ncd-intro','t-ncd-htn','t-ncd-dm'] },
+  { id:'c-mch', code:'CHP-MCH', title:'Maternal & Child Health', level:'JCHEW / CHEW', color:'pink', desc:'Antenatal, delivery and postnatal care; child health; IMCI and immunisation.', objectives:['Provide ANC within scope','Recognise danger signs','Support immunisation services'], topics:['t-mch-anc','t-mch-pnc','t-mch-imci','t-mch-imm'] },
+  { id:'c-healthedu', code:'CHP-HE', title:'Health Promotion & Education', level:'JCHEW / CHEW', color:'sky', desc:'Communication, behaviour change, health education methods and materials.', objectives:['Design health education sessions','Apply behaviour change models','Use appropriate methods'], topics:['t-he-intro','t-he-methods','t-he-behaviour'] },
+  { id:'c-ethics', code:'CHP-ETH', title:'Professional Ethics & Practice', level:'JCHEW / CHEW', color:'indigo', desc:'Ethics, scope of practice, professionalism, medico-legal issues and CHPRBN regulations.', objectives:['Apply ethical principles','Work within scope of practice','Understand professional regulation'], topics:['t-eth-intro','t-eth-scope','t-eth-chprbn'] },
+  { id:'c-clin', code:'CHP-CS', title:'Clinical Skills & Emergency Care', level:'JCHEW / CHEW', color:'cyan', desc:'Vital signs, basic assessment, emergency response, IPC and documentation.', objectives:['Take and interpret vital signs','Perform basic assessment','Respond to emergencies within scope'], topics:['t-clin-vitals','t-clin-assess','t-clin-emerg','t-clin-ipc'] },
+  { id:'c-stats', code:'CHP-HIS', title:'Health Statistics & Information', level:'JCHEW / CHEW', color:'lime', desc:'Health data collection, records, basic statistics and reporting.', objectives:['Collect and record health data','Compute basic statistics','Use data for decisions'], topics:['t-stats-intro','t-stats-measures','t-stats-records'] },
+  { id:'c-pharm', code:'CHP-PHM', title:'Pharmacology & Medicines', level:'JCHEW / CHEW', color:'orange', desc:'Basic pharmacology, essential medicines, storage, administration and rational drug use.', objectives:['Describe drug classes','Administer medicines safely','Counsel on medicines'], topics:['t-pharm-intro','t-pharm-essential','t-pharm-admin'] }
+];
+
+/* ---- TOPICS (handouts) ---- */
+const topics = [
+  {
+    id:'t-phc-intro', course:'c-phc', title:'Introduction to Primary Health Care', difficulty:'Easy', time:'25 min',
+    objectives:['Define Primary Health Care (PHC)','State the historical background of PHC','Explain the Alma-Ata Declaration'],
+    sections:[
+      { h:'What is Primary Health Care?', p:'Primary Health Care (PHC) is essential health care based on practical, scientifically sound and socially acceptable methods and technology made universally accessible to individuals and families in the community through their full participation and at a cost that the community and country can afford to maintain at every stage of their development in a spirit of self-reliance and self-determination.' },
+      { h:'Historical Background', p:'PHC was formally declared at the International Conference on Primary Health Care held in <strong>Alma-Ata, USSR (now Kazakhstan) in 1978</strong>, jointly organised by WHO and UNICEF. The Declaration set the goal of <em>"Health for All by the Year 2000"</em>.' },
+      { h:'Key Principles of PHC', ul:['Equitable distribution of health services','Community participation','Inter-sectoral collaboration','Appropriate technology','Focus on prevention and health promotion','Accessibility and affordability'] },
+      { h:'Nigeria and PHC', p:'Nigeria adopted PHC as the cornerstone of its national health policy. The <strong>Ward Health System</strong> was introduced in 2001, with the <strong>Ward Minimum Health Care Package</strong> defining essential services at the ward level, and PHC facilities functioning under the "<em>PHC Under One Roof</em>" concept in many states.' },
+      { h:'Community Health Relevance', p:'CHEWs and JCHEWs are the frontline workforce implementing PHC at the community and ward levels. They link households to the health system, provide basic curative and preventive services, and mobilise communities.' },
+      { h:'Exam Focus', ul:['Alma-Ata Declaration — 1978','Health for All by 2000','PHC = "essential health care"','Ward Minimum Health Care Package','PHC Under One Roof'] }
+    ]
+  },
+  {
+    id:'t-phc-principles', course:'c-phc', title:'Principles & Components of PHC', difficulty:'Easy', time:'20 min',
+    objectives:['List PHC principles','Describe the eight components of PHC'],
+    sections:[
+      { h:'Principles of PHC', ul:['Equitable distribution','Community participation','Inter-sectoral coordination','Appropriate technology','Health promotion & prevention focus'] },
+      { h:'The Eight Components of PHC', ol:['Education concerning prevailing health problems and methods of preventing and controlling them','Promotion of food supply and proper nutrition','Adequate supply of safe water and basic sanitation','Maternal and child health care, including family planning','Immunisation against major infectious diseases','Prevention and control of locally endemic diseases','Appropriate treatment of common diseases and injuries','Provision of essential drugs'] },
+      { h:'Exam Focus', p:'Memorise the <strong>8 components</strong> — frequently tested. Mnemonic: <em>E-P-W-M-I-P-T-D</em>.' }
+    ]
+  },
+  {
+    id:'t-phc-nigeria', course:'c-phc', title:'PHC in Nigeria — Structure & Levels', difficulty:'Moderate', time:'20 min',
+    objectives:['Describe the three tiers of health care in Nigeria','Explain the roles of each tier'],
+    sections:[
+      { h:'Three Tiers of Health Care', ul:['<strong>Primary</strong> — Local Government / Ward level (PHC centres, health posts, CHIPS)','<strong>Secondary</strong> — State level (General Hospitals, Specialist Hospitals)','<strong>Tertiary</strong> — Federal level (Teaching Hospitals, Federal Medical Centres)'] },
+      { h:'Ward Health System', p:'A Ward Health System consists of a Ward Health Centre supported by Health Posts and Community Health Practitioners. A ward typically covers a population of about 10,000–30,000 people. The <strong>Ward Minimum Health Care Package</strong> defines services: immunisation, ANC, delivery, family planning, treatment of common illnesses, health education, and referral.' },
+      { h:'Role of CHEW/JCHEW', p:'CHEWs and JCHEWs staff the PHC facilities and outreach posts, deliver services, keep records, refer complicated cases, and serve as the bridge between community and facility.' }
+    ]
+  },
+  {
+    id:'t-phc-ward', course:'c-phc', title:'Ward Minimum Health Care Package', difficulty:'Moderate', time:'18 min',
+    objectives:['List the services in the Ward Minimum Health Care Package'],
+    sections:[
+      { h:'Services in the Package', ul:['Immunisation services','Antenatal and postnatal care','Family planning','Prevention and treatment of malaria','Management of childhood illnesses (IMCI)','Treatment of common diseases and injuries','Health education and promotion','Water, sanitation & hygiene promotion','Referral services','Nutrition services (including growth monitoring)','Prevention of HIV/AIDS and other communicable diseases','Essential drugs supply'] },
+      { h:'Exam Focus', p:'Note the difference between <strong>PHC components (8)</strong> and <strong>Ward Minimum Package items</strong> — examiners sometimes mix them.' }
+    ]
+  },
+  {
+    id:'t-cbhc-intro', course:'c-cbhc', title:'Introduction to Community-Based Health Care', difficulty:'Easy', time:'18 min',
+    objectives:['Define CBHC','Explain the CBHC approach'],
+    sections:[
+      { h:'What is CBHC?', p:'Community-Based Health Care (CBHC) is an approach in which health activities are planned, implemented, monitored and evaluated <strong>with</strong> the community, using local resources and structures. It emphasises self-reliance and community ownership.' },
+      { h:'Key Features', ul:['Community participation','Use of local resources','Integration with community structures (e.g., Village Development Committees)','Focus on preventive and promotive care'] }
+    ]
+  },
+  {
+    id:'t-cbhc-diag', course:'c-cbhc', title:'Community Diagnosis', difficulty:'Moderate', time:'25 min',
+    objectives:['Define community diagnosis','Describe steps of community diagnosis'],
+    sections:[
+      { h:'Definition', div:'<strong>Community diagnosis</strong> is a comprehensive assessment of the health status of a community and the factors that influence it, in order to plan and implement appropriate health interventions.' },
+      { h:'Steps', ol:['Identify the community and define boundaries','Identify key informants and stakeholders','Collect primary data (survey, interviews, observation)','Collect secondary data (records, reports)','Analyse data — identify priority problems','Present findings to the community','Prioritise problems with community','Plan interventions together','Implement, monitor and evaluate'] },
+      { h:'Data to Collect', ul:['Demographic data — population, age, sex','Health status — morbidity, mortality','Environmental — water, sanitation, housing','Socio-economic — occupation, income, education','Health services — available, accessibility, utilisation','Nutritional status','Community perception of problems'] }
+    ]
+  },
+  {
+    id:'t-cbhc-mobil', course:'c-cbhc', title:'Community Mobilisation', difficulty:'Moderate', time:'18 min',
+    objectives:['Explain community mobilisation','Identify mobilisation methods'],
+    sections:[
+      { h:'Definition', p:'Community mobilisation is the process of bringing community members together to act collectively on issues that affect their health and well-being.' },
+      { h:'Methods', ul:['Community meetings','Health education sessions','Use of community leaders and gatekeepers','Formation of health committees','Home visits','Use of mass media and local radio','Drama, songs, storytelling'] }
+    ]
+  },
+  {
+    id:'t-anat-intro', course:'c-anat', title:'Introduction to Anatomy & Physiology', difficulty:'Easy', time:'15 min',
+    objectives:['Define anatomy and physiology','Describe levels of organisation'],
+    sections:[
+      { h:'Definitions', div:'<strong>Anatomy</strong> is the study of the structure of the body. <strong>Physiology</strong> is the study of the functions of the body.' },
+      { h:'Levels of Organisation', p:'Cell → Tissue → Organ → System → Organism. Cells are the basic unit of life.' },
+      { h:'Anatomical Terms', ul:['<strong>Anterior</strong> — front','<strong>Posterior</strong> — back','<strong>Superior</strong> — above','<strong>Inferior</strong> — below','<strong>Medial</strong> — towards midline','<strong>Lateral</strong> — away from midline','<strong>Proximal</strong> — nearer to origin','<strong>Distal</strong> — farther from origin'] }
+    ]
+  },
+  {
+    id:'t-anat-cvs', course:'c-anat', title:'Cardiovascular System', difficulty:'Moderate', time:'25 min',
+    objectives:['Describe heart structure','Explain circulation','Relate to vital sign measurement'],
+    sections:[
+      { h:'The Heart', p:'A four-chambered muscular organ: right and left <strong>atria</strong> (receiving chambers) and right and left <strong>ventricles</strong> (pumping chambers). Blood flow: body → RA → RV → lungs → LA → LV → body.' },
+      { h:'Blood Vessels', ul:['<strong>Arteries</strong> — carry blood away from the heart (mostly oxygenated)','<strong>Veins</strong> — carry blood towards the heart (mostly deoxygenated)','<strong>Capillaries</strong> — site of exchange'] },
+      { h:'Pulse Points', ul:['Radial — wrist (most common)','Brachial — inner elbow','Carotid — neck','Femoral — groin','Popliteal — behind knee','Dorsalis pedis — foot'] },
+      { h:'Normal Pulse Rates', ul:['Adults: 60–100 bpm','Children: 80–120 bpm','Infants: 100–160 bpm'] }
+    ]
+  },
+  {
+    id:'t-anat-resp', course:'c-anat', title:'Respiratory System', difficulty:'Moderate', time:'20 min',
+    objectives:['Describe respiratory tract','Explain gas exchange','List normal respiratory rates'],
+    sections:[
+      { h:'Structure', p:'Upper: nose, pharynx, larynx. Lower: trachea, bronchi, bronchioles, alveoli (site of gas exchange).' },
+      { h:'Normal Respiratory Rates (at rest)', ul:['Adults: 12–20 cpm','Children (1–5 yrs): 20–30 cpm','Infants: 30–60 cpm'] },
+      { h:'Assessment Note', p:'Count for a full minute when the patient is at rest. Note rate, rhythm, depth and any signs of difficulty (flaring, retractions, grunting).' }
+    ]
+  },
+  {
+    id:'t-anat-git', course:'c-anat', title:'Digestive System (Overview)', difficulty:'Moderate', time:'18 min',
+    objectives:['Name parts of the GIT','Explain basic functions'],
+    sections:[
+      { h:'Parts', p:'Mouth → Oesophagus → Stomach → Small intestine (duodenum, jejunum, ileum) → Large intestine → Rectum → Anus. Accessory organs: liver, gallbladder, pancreas.' },
+      { h:'Functions', ul:['Ingestion','Digestion (mechanical & chemical)','Absorption','Elimination'] }
+    ]
+  },
+  {
+    id:'t-nut-nutrients', course:'c-nut', title:'Classification of Nutrients', difficulty:'Easy', time:'20 min',
+    objectives:['Classify nutrients','State functions of each class'],
+    sections:[
+      { h:'Macronutrients', ul:['<strong>Carbohydrates</strong> — energy (4 kcal/g)','<strong>Proteins</strong> — growth, repair, energy (4 kcal/g)','<strong>Fats & Oils</strong> — energy, insulation (9 kcal/g)'] },
+      { h:'Micronutrients', ul:['<strong>Vitamins</strong> — fat-soluble (A, D, E, K) & water-soluble (B-complex, C)','<strong>Minerals</strong> — calcium, iron, iodine, zinc etc.'] },
+      { h:'Water', p:'Essential for all body functions. Adults need about 2–3 litres daily depending on activity and climate.' }
+    ]
+  },
+  {
+    id:'t-nut-assessment', course:'c-nut', title:'Nutritional Assessment', difficulty:'Moderate', time:'22 min',
+    objectives:['Describe methods of nutritional assessment','Interpret MUAC'],
+    sections:[
+      { h:'Methods (ABCD)', ul:['<strong>A</strong>nthropometry — weight, height, MUAC, head/chest circumference','<strong>B</strong>iochemical — laboratory tests (Hb, serum albumin)','<strong>C</strong>linical — physical signs of deficiency','<strong>D</strong>ietary — food recall, frequency, history'] },
+      { h:'MUAC (Mid-Upper Arm Circumference)', div:'Used in children 6–59 months to screen for acute malnutrition. <strong>MUAC &lt; 11.5 cm</strong> = Severe Acute Malnutrition (SAM) — refer. <strong>11.5–12.5 cm</strong> = Moderate Acute Malnutrition (MAM). <strong>&gt; 12.5 cm</strong> = normal.' },
+      { h:'Growth Monitoring', p:'Weight-for-age, height-for-age and weight-for-height plotted on the Road to Health Chart help track growth and detect malnutrition early.' }
+    ]
+  },
+  {
+    id:'t-nut-malnutrition', course:'c-nut', title:'Malnutrition', difficulty:'Moderate', time:'25 min',
+    objectives:['Define malnutrition','Differentiate kwashiorkor and marasmus','Describe management within scope'],
+    sections:[
+      { h:'Definition', p:'Malnutrition is a condition resulting from an imbalance between nutrient intake and the body\'s requirement.' },
+      { h:'Types of Protein-Energy Malnutrition (PEM)', ul:['<strong>Kwashiorkor</strong> — protein deficiency; oedema, moon face, skin & hair changes, apathy; child may appear "well fed" due to oedema','<strong>Marasmus</strong> — severe overall energy deficiency; wasting, muscle wasting, loss of subcutaneous fat, "old man" face; no oedema','<strong>Marasmic-kwashiorkor</strong> — features of both'] },
+      { h:'Management within CHEW scope', ul:['Assess and classify (MUAC, weight, oedema)','For SAM with danger signs or medical complications — <strong>refer urgently</strong>','For uncomplicated SAM/MAM — refer to CMAM programme (RUTF, OTP)','Treat/prevent dehydration, infection, hypoglycaemia','Health education on nutrition, breastfeeding, complementary feeding'] },
+      { h:'Prevention', ul:['Exclusive breastfeeding 0–6 months','Timely complementary feeding from 6 months','Immunisation','Vitamin A supplementation','Deworming','Growth monitoring & promotion'] }
+    ]
+  },
+  {
+    id:'t-cd-intro', course:'c-cd', title:'Introduction to Communicable Diseases', difficulty:'Easy', time:'18 min',
+    objectives:['Define communicable disease','Describe modes of transmission','List levels of prevention'],
+    sections:[
+      { h:'Definition', p:'A communicable (infectious) disease is an illness caused by a specific infectious agent or its toxic products that arises through transmission of that agent from an infected person, animal or reservoir to a susceptible host.' },
+      { h:'Chain of Infection', p:'Infectious agent → Reservoir → Portal of exit → Mode of transmission → Portal of entry → Susceptible host. Breaking any link prevents infection.' },
+      { h:'Modes of Transmission', ul:['<strong>Contact</strong> — direct (skin, sexual) and indirect (fomites)','<strong>Droplet</strong> — coughing, sneezing (short distance)','<strong>Airborne</strong> — TB, measles (long distance)','<strong>Vehicle-borne</strong> — food, water, blood','<strong>Vector-borne</strong> — mosquitoes, flies','<strong>Vertical</strong> — mother to child'] },
+      { h:'Levels of Prevention', ul:['<strong>Primary</strong> — prevent occurrence (immunisation, hygiene)','<strong>Secondary</strong> — early detection & treatment (screening, prompt treatment)','<strong>Tertiary</strong> — limit disability & rehabilitate'] }
+    ]
+  },
+  {
+    id:'t-cd-malaria', course:'c-cd', title:'Malaria', difficulty:'Moderate', time:'30 min',
+    objectives:['Describe malaria transmission','Identify clinical features','State prevention and control measures'],
+    sections:[
+      { h:'Cause & Transmission', p:'Caused by <em>Plasmodium</em> parasites (P. falciparum most common & severe in Nigeria), transmitted by the bite of an infected female <em>Anopheles</em> mosquito. Can also be transmitted through blood transfusion and vertically.' },
+      { h:'Clinical Features', ul:['Fever, chills, rigors, sweating','Headache, body pains','Nausea, vomiting','Anaemia, splenomegaly (chronic)','Severe malaria: convulsions, altered consciousness, difficulty breathing, dark urine, severe anaemia — <strong>emergency</strong>'] },
+      { h:'Diagnosis', p:'Rapid Diagnostic Test (RDT) or microscopy (blood film). Every suspected case should be tested before treatment.' },
+      { h:'Prevention & Control', ul:['Long-Lasting Insecticidal Nets (LLINs)','Indoor Residual Spraying (IRS)','Environmental management — clear stagnant water','Chemoprophylaxis for pregnant women (IPTp with SP)','Prompt diagnosis and treatment','Health education'] },
+      { h:'Role of CHEW', ul:['Test before treating','Treat uncomplicated cases per national guidelines','Refer severe/complicated cases urgently','Distribute LLINs and educate on use','Give IPTp in ANC within scope'] }
+    ]
+  },
+  {
+    id:'t-cd-tb', course:'c-cd', title:'Tuberculosis', difficulty:'Moderate', time:'28 min',
+    objectives:['Describe TB transmission','Recognise symptoms','Explain DOTS and referral'],
+    sections:[
+      { h:'Cause & Transmission', p:'Caused by <em>Mycobacterium tuberculosis</em>. Spreads through airborne droplets when an infected person coughs or sneezes. Affects mainly the lungs (pulmonary TB) but can affect other organs.' },
+      { h:'Symptoms', ul:['Cough lasting 2 weeks or more','Night sweats','Weight loss','Fever, evening rise','Chest pain, haemoptysis (advanced)'] },
+      { h:'Diagnosis & Treatment', p:'Sputum smear microscopy, GeneXpert. Treatment is free in Nigeria through the National TB Programme (DOTS — Directly Observed Therapy, Short-course). Regimen: 2HRZE / 4HR for new cases.' },
+      { h:'Prevention', ul:['BCG immunisation at birth','Early detection and treatment','Cough hygiene','Ventilation','Isoniazid Preventive Therapy (IPT) for eligible contacts'] },
+      { h:'CHEW Role', ul:['Screen symptomatic patients','Refer for diagnosis','Support DOTS — observe patients take medicine','Contact tracing & health education','Reduce stigma'] }
+    ]
+  },
+  {
+    id:'t-cd-cholera', course:'c-cd', title:'Cholera', difficulty:'Moderate', time:'22 min',
+    objectives:['Describe cholera','State case definition','Explain outbreak response'],
+    sections:[
+      { h:'Cause', p:'Caused by <em>Vibrio cholerae</em>, transmitted through contaminated water and food. Incubation: a few hours to 5 days.' },
+      { h:'Clinical Features', p:'Sudden profuse watery (rice-water) diarrhoea, vomiting, rapid dehydration, muscle cramps, hypovolaemic shock, death within hours if untreated.' },
+      { h:'Management', ul:['<strong>Rehydration is the cornerstone</strong>','Oral Rehydration Solution (ORS) for mild/moderate','IV Ringer\'s Lactate for severe dehydration','Antibiotics (as per guideline) reduce duration','Zinc for children','Report immediately — notifiable'] },
+      { h:'Outbreak Response', ul:['Isolation & treatment of cases','Safe water — chlorination','Sanitation & hygiene promotion','Oral cholera vaccine in outbreaks','Community education on handwashing and safe water'] }
+    ]
+  },
+  {
+    id:'t-ncd-intro', course:'c-ncd', title:'Introduction to Non-Communicable Diseases', difficulty:'Easy', time:'15 min',
+    objectives:['Define NCDs','List common NCDs and risk factors'],
+    sections:[
+      { h:'Definition', p:'Non-communicable diseases (NCDs) are chronic diseases not transmitted from person to person. They are the leading cause of death worldwide, including in Nigeria.' },
+      { h:'Common NCDs', ul:['Hypertension','Diabetes mellitus','Sickle cell disease','Cancers','Chronic respiratory diseases','Mental health disorders'] },
+      { h:'Modifiable Risk Factors', ul:['Tobacco use','Harmful alcohol use','Unhealthy diet','Physical inactivity','Obesity'] },
+      { h:'Non-modifiable Risk Factors', ul:['Age','Sex','Family history/genetics','Ethnicity'] }
+    ]
+  },
+  {
+    id:'t-ncd-htn', course:'c-ncd', title:'Hypertension', difficulty:'Moderate', time:'25 min',
+    objectives:['Define hypertension','Recognise risk factors','Screen and refer appropriately'],
+    sections:[
+      { h:'Definition', div:'<strong>Hypertension</strong> = persistent blood pressure ≥ 140/90 mmHg on two or more occasions.' },
+      { h:'Classification', ul:['Normal: < 120/80','Elevated: 120–129 / <80','Stage 1 HTN: 130–139 / 80–89','Stage 2 HTN: ≥ 140/90','Hypertensive crisis: > 180/120 — emergency'] },
+      { h:'Risk Factors', ul:['Age, family history, obesity, high salt intake, smoking, alcohol, stress, diabetes, kidney disease'] },
+      { h:'Symptoms', p:'Often asymptomatic ("silent killer"). May present with headache, dizziness, blurred vision, chest pain, palpitations, nosebleeds.' },
+      { h:'Community Role', ul:['Measure BP accurately — patient seated 5 min rest, arm at heart level','Refer newly detected cases','Educate on lifestyle: reduce salt, exercise, avoid smoking/alcohol','Support follow-up and adherence'] }
+    ]
+  },
+  {
+    id:'t-ncd-dm', course:'c-ncd', title:'Diabetes Mellitus', difficulty:'Moderate', time:'25 min',
+    objectives:['Define diabetes','State types and risk factors','Identify emergencies'],
+    sections:[
+      { h:'Definition', p:'A metabolic disorder characterised by chronic hyperglycaemia due to defects in insulin secretion, insulin action, or both.' },
+      { h:'Types', ul:['<strong>Type 1</strong> — autoimmune; insulin-dependent; usually young','<strong>Type 2</strong> — insulin resistance; most common; associated with obesity, age','<strong>Gestational</strong> — during pregnancy'] },
+      { h:'Classic Symptoms', ul:['Polyuria (frequent urination)','Polydipsia (excessive thirst)','Polyphagia (excessive hunger)','Weight loss','Blurred vision','Slow-healing wounds'] },
+      { h:'Emergencies', ul:['<strong>Hypoglycaemia</strong> — low blood sugar; sweating, confusion, tremors; give sugar if conscious; refer','<strong>Diabetic ketoacidosis (DKA)</strong> — high sugar, ketones, dehydration, Kussmaul breathing; emergency — refer'] },
+      { h:'Role of CHEW', p:'Screen with blood glucose, refer, educate on diet, exercise, foot care, adherence to medicines, and recognising emergencies.' }
+    ]
+  },
+  {
+    id:'t-mch-anc', course:'c-mch', title:'Antenatal Care', difficulty:'Moderate', time:'28 min',
+    objectives:['Describe components of ANC','List danger signs in pregnancy','Describe services provided by CHEW'],
+    sections:[
+      { h:'Definition', p:'Antenatal care (ANC) is the care provided to a pregnant woman from conception to delivery to ensure the best possible outcome for mother and baby.' },
+      { h:'Components of ANC', ul:['History taking and physical examination','Vital signs and weight','Abdominal examination (fundal height, fetal heart)','Laboratory tests — Hb, blood group, HIV, VDRL, urine','Tetanus Toxoid (TT) immunisation','IPTp (malaria prevention with SP)','Iron and folate supplementation','Deworming','Health education — nutrition, hygiene, danger signs, birth preparedness'] },
+      { h:'Danger Signs in Pregnancy (refer urgently)', ul:['Vaginal bleeding','Severe headache / blurred vision','Convulsions','Severe abdominal pain','High fever','Reduced or absent fetal movement','Leaking liquor before term','Difficulty breathing','Severe pallor','Swelling of face and hands'] },
+      { h:'Frequency (WHO 2016)', p:'At least <strong>8 ANC contacts</strong> recommended for a positive pregnancy experience. In Nigeria, this is being adopted.' }
+    ]
+  },
+  {
+    id:'t-mch-pnc', course:'c-mch', title:'Postnatal Care', difficulty:'Moderate', time:'20 min',
+    objectives:['Describe PNC schedule','List postnatal danger signs'],
+    sections:[
+      { h:'Definition', p:'Postnatal care is the care given to the mother and newborn from delivery up to 6 weeks.' },
+      { h:'Schedule (WHO)', ul:['Within 24 hours of delivery','Day 3 (48–72 hours)','Day 7–14','Week 6'] },
+      { h:'Components', ul:['Assess mother — bleeding, BP, temperature, uterus, perineum','Assess newborn — feeding, weight, cord, jaundice, temperature','Counselling on breastfeeding, nutrition, family planning, immunisation','Vitamin A supplementation for mother','Screen for postpartum depression'] },
+      { h:'Danger Signs — Refer', ul:['Heavy vaginal bleeding','Fever / chills','Offensive discharge','Severe abdominal pain','Convulsions / severe headache','Difficulty breathing','Painful, swollen leg','Newborn: poor feeding, jaundice, cord infection, fast breathing, low temperature'] }
+    ]
+  },
+  {
+    id:'t-mch-imci', course:'c-mch', title:'IMCI — Integrated Management of Childhood Illness', difficulty:'Moderate', time:'30 min',
+    objectives:['Describe IMCI strategy','Identify danger signs','Apply IMCI algorithm within scope'],
+    sections:[
+      { h:'What is IMCI?', p:'A strategy developed by WHO and UNICEF to reduce child mortality by managing the <strong>major causes of childhood illness</strong> in an integrated way. Targets children < 5 years.' },
+      { h:'General Danger Signs (any = urgent referral)', ul:['Unable to drink or breastfeed','Vomiting everything','Convulsions','Lethargic or unconscious'] },
+      { h:'Main Symptoms Assessed', ul:['Cough or difficulty breathing','Diarrhoea','Fever','Ear problem','Malnutrition and anaemia'] },
+      { h:'Key Conditions', ul:['<strong>Pneumonia</strong> — cough + fast breathing + chest indrawing','<strong>Diarrhoea</strong> — classify by dehydration; treat with ORS + Zinc','<strong>Malaria</strong> — fever; test and treat','<strong>Malnutrition</strong> — MUAC, oedema, weight-for-age'] },
+      { h:'CHEW Role', p:'CHEWs trained in IMCI can assess children, classify illness, treat uncomplicated cases, counsel caregivers, and refer those with danger signs or severe classification.' }
+    ]
+  },
+  {
+    id:'t-mch-imm', course:'c-mch', title:'Immunisation & Cold Chain', difficulty:'Moderate', time:'28 min',
+    objectives:['Describe the national immunisation schedule','Explain cold chain','Counsel caregivers'],
+    sections:[
+      { h:'National Programme on Immunisation (NPI) Schedule in Nigeria', ul:['<strong>BCG</strong> — at birth','<strong>Hep B (birth dose)</strong> — at birth','<strong>OPV 0</strong> — at birth','<strong>OPV 1,2,3</strong> — 6, 10, 14 weeks','<strong>Penta 1,2,3</strong> (DPT-HepB-Hib) — 6, 10, 14 weeks','<strong>PCV 1,2,3</strong> — 6, 10, 14 weeks','<strong>Rotavirus 1,2,3</strong> — 6, 10, 14 weeks','<strong>IPV</strong> — 14 weeks','<strong>Measles 1</strong> — 9 months','<strong>Measles 2</strong> — 15 months','<strong>Vitamin A</strong> — 6, 12, 18, 24 months (and every 6 months)'] },
+      { h:'Cold Chain', p:'The system of transporting and storing vaccines at the correct temperature from manufacture to administration. <strong>+2°C to +8°C</strong> for most vaccines. BCG, measles, OPV are sensitive to heat and light.' },
+      { h:'Cold Chain Equipment', ul:['Walk-in cold rooms','Refrigerators','Vaccine carriers','Cold boxes','Ice packs','Thermometers'] },
+      { h:'CHEW Role', ul:['Ensure vaccine temperature monitoring','Follow vaccine vial monitor (VVM) checks','Administer correct dose, route, site','Educate caregivers on immunisation and side effects'] }
+    ]
+  },
+  {
+    id:'t-he-intro', course:'c-healthedu', title:'Introduction to Health Education', difficulty:'Easy', time:'15 min',
+    objectives:['Define health education','Explain its purpose'],
+    sections:[
+      { h:'Definition', p:'Health education is any combination of learning experiences designed to help individuals and communities improve their health, by increasing their knowledge or influencing their attitudes.' },
+      { h:'Purpose', ul:['Increase knowledge','Change attitudes','Promote healthy behaviour','Enable informed decisions','Improve health literacy'] },
+      { h:'Principles', ul:['Assess needs','Identify priorities','Set objectives','Use appropriate methods and materials','Evaluate'] }
+    ]
+  },
+  {
+    id:'t-he-methods', course:'c-healthedu', title:'Methods & Materials in Health Education', difficulty:'Moderate', time:'20 min',
+    objectives:['Classify health education methods','Select appropriate methods'],
+    sections:[
+      { h:'Classification of Methods', ul:['<strong>Individual</strong> — counselling, home visits','<strong>Group</strong> — group discussions, demonstrations, role-play','<strong>Mass</strong> — radio, TV, posters, drama'] },
+      { h:'Choosing a Method', p:'Consider audience literacy, size, message, resources, cultural context, and whether the goal is awareness, knowledge, attitude or skill.' },
+      { h:'Characteristics of Good Materials', ul:['Appropriate language & literacy level','Culturally relevant & acceptable','Evidence-based','Pre-tested with target audience','Clear, simple, action-oriented'] }
+    ]
+  },
+  {
+    id:'t-he-behaviour', course:'c-healthedu', title:'Behaviour Change Communication', difficulty:'Moderate', time:'20 min',
+    objectives:['Explain behaviour change models','Apply BCC principles'],
+    sections:[
+      { h:'What is BCC?', p:'An interactive process of working with individuals and communities to develop communication strategies that promote positive health behaviours.' },
+      { h:'Models', ul:['<strong>Health Belief Model</strong> — perceived susceptibility, severity, benefits, barriers, cues to action','<strong>Stages of Change (Prochaska)</strong> — precontemplation → contemplation → preparation → action → maintenance','<strong>Theory of Planned Behaviour</strong> — attitudes, subjective norms, perceived control'] },
+      { h:'Key BCC Principles', ul:['Understand the audience','Use multiple channels','Promote specific, doable behaviours','Involve community','Be respectful & non-judgmental'] }
+    ]
+  },
+  {
+    id:'t-eth-intro', course:'c-ethics', title:'Ethical Principles in Community Health', difficulty:'Easy', time:'15 min',
+    objectives:['List ethical principles','Apply to community practice'],
+    sections:[
+      { h:'Four Core Principles', ul:['<strong>Autonomy</strong> — respect patient\'s right to decide','<strong>Beneficence</strong> — act in patient\'s best interest','<strong>Non-maleficence</strong> — "do no harm"','<strong>Justice</strong> — fairness in distribution of health resources'] },
+      { h:'Other Principles', ul:['Confidentiality','Veracity (truthfulness)','Fidelity (loyalty)','Dignity','Respect for persons'] },
+      { h:'Application in Community', p:'Informed consent before procedures, maintaining confidentiality during home visits, treating all patients fairly regardless of status, and not practicing beyond scope.' }
+    ]
+  },
+  {
+    id:'t-eth-scope', course:'c-ethics', title:'Scope of Practice for CHEW/JCHEW', difficulty:'Moderate', time:'18 min',
+    objectives:['Define scope of practice','Recognise limits'],
+    sections:[
+      { h:'Definition', p:'Scope of practice refers to the procedures, actions and processes that a Community Health Practitioner is permitted to undertake according to their training, registration and the law.' },
+      { h:'JCHEW & CHEW General Scope (as regulated by CHPRBN)', ul:['Provision of basic care at the community level','Health education and promotion','Basic clinical assessment and treatment of minor ailments per training','Immunisation','Maternal and child health services','Community diagnosis and mobilisation','Record keeping and reporting','Referral of cases beyond scope'] },
+      { h:'Important Boundaries', ul:['Do not perform surgical procedures outside training','Do not prescribe beyond authorized formulary','Always refer when in doubt or when a case exceeds training','Work under supervision where required'] }
+    ]
+  },
+  {
+    id:'t-eth-chprbn', course:'c-ethics', title:'CHPRBN & Professional Regulation', difficulty:'Moderate', time:'18 min',
+    objectives:['Describe CHPRBN','List its functions'],
+    sections:[
+      { h:'CHPRBN', p:'The Community Health Practitioners Registration Board of Nigeria is the statutory body established by law to register, license and regulate Community Health Practitioners (JCHEW, CHEW, and higher cadres) in Nigeria.' },
+      { h:'Functions', ul:['Register and license Community Health Practitioners','Regulate training institutions','Set and maintain standards of practice','Investigate professional misconduct','Issue and renew practising licences','Promote continuing professional development'] },
+      { h:'Registered Cadres', ul:['JCHEW — Junior Community Health Extension Worker','CHEW — Community Health Extension Worker','CHO — Community Health Officer'] }
+    ]
+  },
+  {
+    id:'t-clin-vitals', course:'c-clin', title:'Vital Signs', difficulty:'Easy', time:'22 min',
+    objectives:['Define vital signs','State normal ranges','Describe correct measurement technique'],
+    sections:[
+      { h:'What are Vital Signs?', p:'Measurements of the body\'s most basic functions: <strong>Temperature, Pulse, Respiration, Blood Pressure</strong>, and often <strong>Oxygen saturation</strong> and <strong>pain</strong>.' },
+      { h:'Normal Ranges (Adults)', ul:['Temperature: 36.5–37.5 °C','Pulse: 60–100 bpm','Respirations: 12–20 cpm','BP: < 120/80 mmHg (normal)'] },
+      { h:'Procedure for Pulse', ol:['Explain to patient','Position patient comfortably','Place 2nd and 3rd fingers over the artery (do not use thumb)','Count for 60 seconds','Record rate, rhythm, volume'] },
+      { h:'Procedure for BP', ol:['Patient seated, rested 5 min','Arm supported at heart level','Apply cuff 2–3 cm above elbow','Inflate to 20–30 mmHg above estimated systolic','Deflate slowly (2–3 mmHg/sec)','Record systolic (first sound) and diastolic (last sound)'] },
+      { h:'Common Mistakes', ul:['Using thumb for pulse','Not counting full minute','Cuff too tight/loose','Patient not rested','Talking during measurement'] }
+    ]
+  },
+  {
+    id:'t-clin-assess', course:'c-clin', title:'Basic Patient Assessment', difficulty:'Moderate', time:'25 min',
+    objectives:['Describe systematic assessment approach','Identify danger signs','Document findings'],
+    sections:[
+      { h:'Approach', p:'Use a systematic approach: <strong>Primary survey (ABCDE)</strong> for emergencies, then secondary assessment (history, examination).' },
+      { h:'Primary Survey (ABCDE)', ul:['<strong>A</strong>irway — patent?','<strong>B</strong>reathing — rate, effort, sounds','<strong>C</strong>irculation — pulse, BP, capillary refill','<strong>D</strong>isability — consciousness (AVPU)','<strong>E</strong>xposure — temperature, injuries, environment'] },
+      { h:'AVPU Scale', ul:['<strong>A</strong>lert','<strong>V</strong>erbal response','<strong>P</strong>ain response','<strong>U</strong>nresponsive'] },
+      { h:'History (SOCRATES for pain)', ul:['Site, Onset, Character, Radiation, Associated, Timing, Exacerbating, Severity'] },
+      { h:'Documentation', p:'Record findings accurately: date, time, observations, actions taken, referral made, name/signature. Use clear, objective language.' }
+    ]
+  },
+  {
+    id:'t-clin-emerg', course:'c-clin', title:'Basic Emergency Care', difficulty:'Moderate', time:'25 min',
+    objectives:['Recognise emergencies','Describe basic first response within scope','Refer appropriately'],
+    sections:[
+      { h:'Common Emergencies', ul:['Severe difficulty breathing','Convulsions','Severe bleeding','Unconsciousness','Shock','Poisoning','Snake bite','Severe dehydration','Severe hypoglycaemia','Anaphylaxis'] },
+      { h:'Principles of First Response', ul:['Assess scene safety','Check response & call for help','ABC — Airway, Breathing, Circulation','Position patient appropriately (recovery position if unconscious & breathing)','Do not move patient with suspected spinal injury unless in danger','Refer urgently'] },
+      { h:'Specific Situations', ul:['<strong>Convulsions</strong> — protect from injury, do not restrain, position on side, do not put anything in mouth, refer','<strong>Choking</strong> — back blows & abdominal thrusts (adults)','<strong>Severe bleeding</strong> — direct pressure, elevate if possible','<strong>Snake bite</strong> — immobilise, do not incise/suction, refer urgently'] },
+      { h:'Scope Reminder', p:'Community Health Practitioners provide first response and stabilization within training and refer for definitive care. Do not delay referral.' }
+    ]
+  },
+  {
+    id:'t-clin-ipc', course:'c-clin', title:'Infection Prevention & Control', difficulty:'Moderate', time:'22 min',
+    objectives:['Explain IPC principles','Describe standard precautions','Demonstrate hand hygiene'],
+    sections:[
+      { h:'Definition', p:'Infection Prevention and Control (IPC) is a scientific approach and practical solution designed to prevent harm caused by infection to patients and health workers.' },
+      { h:'Standard Precautions (apply to ALL patients)', ul:['Hand hygiene','Use of personal protective equipment (PPE)','Respiratory hygiene / cough etiquette','Safe injection practices','Safe handling of sharps & waste','Environmental cleaning','Safe handling of linen','Sterilisation & disinfection of instruments'] },
+      { h:'WHO 5 Moments for Hand Hygiene', ol:['Before touching a patient','Before clean/aseptic procedure','After body fluid exposure risk','After touching a patient','After touching patient surroundings'] },
+      { h:'Hand Hygiene Steps', p:'Wet hands → apply soap → rub palms, backs, between fingers, thumbs, fingertips → rinse → dry with clean cloth/air. Duration: 20–30 seconds. Alcohol-based hand rub: 20–30 seconds.' },
+      { h:'Common Mistakes', ul:['Not washing before patient contact','Wearing same gloves for multiple patients','Recapping needles','Incorrect hand hygiene duration'] }
+    ]
+  },
+  {
+    id:'t-stats-intro', course:'c-stats', title:'Introduction to Health Statistics', difficulty:'Easy', time:'15 min',
+    objectives:['Define health statistics','List uses'],
+    sections:[
+      { h:'Definition', p:'Health statistics are numerical data about health and health-related events used for planning, monitoring and evaluation.' },
+      { h:'Uses', ul:['Assess health status of a community','Identify health problems & priorities','Plan and evaluate health services','Allocate resources','Conduct research'] },
+      { h:'Types of Data', ul:['<strong>Primary</strong> — collected first-hand','<strong>Secondary</strong> — already collected'] }
+    ]
+  },
+  {
+    id:'t-stats-measures', course:'c-stats', title:'Basic Health Indicators', difficulty:'Moderate', time:'22 min',
+    objectives:['Define key health indicators','Compute basic rates'],
+    sections:[
+      { h:'Common Indicators', ul:['<strong>Crude birth rate</strong> = (live births in year / mid-year population) × 1000','<strong>Crude death rate</strong> = (deaths in year / mid-year population) × 1000','<strong>Infant mortality rate</strong> = (deaths < 1 yr / live births) × 1000','<strong>Maternal mortality ratio</strong> = (maternal deaths / live births) × 100,000','<strong>Under-5 mortality rate</strong> = (deaths < 5 yrs / 1000 live births)'] },
+      { h:'Why It Matters', p:'These indicators help track progress toward national and global targets (SDGs) and compare health status across populations.' }
+    ]
+  },
+  {
+    id:'t-stats-records', course:'c-stats', title:'Health Records & Reporting', difficulty:'Moderate', time:'18 min',
+    objectives:['Describe types of records','Explain the reporting chain'],
+    sections:[
+      { h:'Types of Records', ul:['Facility registers (ANC, immunisation, OPD, FP)','Patient cards / case notes','Monthly summary forms (e.g., NHMIS forms)','Referral forms','Stock records'] },
+      { h:'NHMIS', p:'The National Health Management Information System (NHMIS) provides the framework for data collection, reporting and use in Nigeria. Health facilities report monthly to the LGA, then to the state and federal levels.' },
+      { h:'Data Quality', ul:['Completeness','Accuracy','Timeliness','Consistency','Integrity'] }
+    ]
+  },
+  {
+    id:'t-pharm-intro', course:'c-pharm', title:'Introduction to Pharmacology', difficulty:'Easy', time:'18 min',
+    objectives:['Define pharmacology','Explain key terms'],
+    sections:[
+      { h:'Definitions', ul:['<strong>Pharmacology</strong> — study of drugs and their effects on the body','<strong>Pharmacokinetics</strong> — what the body does to the drug (ADME: Absorption, Distribution, Metabolism, Excretion)','<strong>Pharmacodynamics</strong> — what the drug does to the body','<strong>Pharmacology</strong> vs <strong>Pharmacy</strong>','<strong>Agonist</strong> — activates receptor','<strong>Antagonist</strong> — blocks receptor'] }
+    ]
+  },
+  {
+    id:'t-pharm-essential', course:'c-pharm', title:'Essential Medicines', difficulty:'Moderate', time:'20 min',
+    objectives:['Define essential medicines','Describe storage and rational use'],
+    sections:[
+      { h:'Definition', p:'Essential medicines are those that satisfy the priority health care needs of the population. WHO publishes an Essential Medicines List, and Nigeria has a National Essential Medicines List.' },
+      { h:'Rational Drug Use', ul:['Right patient','Right drug','Right dose','Right route','Right time','Right documentation'] },
+      { h:'Storage', ul:['Store in cool, dry place unless refrigeration needed','Check expiry dates regularly','Store by category, label clearly','Keep out of reach of children','Follow FEFO (First Expiry, First Out)'] }
+    ]
+  },
+  {
+    id:'t-pharm-admin', course:'c-pharm', title:'Routes of Drug Administration', difficulty:'Moderate', time:'20 min',
+    objectives:['List routes of administration','Match route to situation'],
+    sections:[
+      { h:'Routes', ul:['<strong>Oral</strong> — most common, slow onset, first-pass effect','<strong>Sublingual</strong> — under tongue, fast absorption','<strong>Rectal</strong> — when oral not possible','<strong>Topical</strong> — skin, eye, ear','<strong>Inhalation</strong> — lungs, fast','<strong>Injection</strong> — IV (fastest), IM, SC, ID'] },
+      { h:'Injection Sites', ul:['<strong>IM</strong> — deltoid, vastus lateralis, ventrogluteal','<strong>SC</strong> — abdomen, upper arm, thigh','<strong>ID</strong> — inner forearm (Mantoux, BCG)'] },
+      { h:'Safety', ul:['Check 5 Rights','Use sterile technique','Dispose sharps safely','Document administration'] }
+    ]
+  }
+];
+
+/* ---- QUESTIONS ---- */
+/* Each question: id, q, options[], correct (index), explanation, whyOthers, course, topic, level, difficulty, type, source, sourceUrl, year, verified, clinical, exam */
+
+function Q(o){ return o; }
+
+const questions = [
+  /* ===== AUTHENTIC PAST QUESTIONS (verified style — labelled as such only where independently traceable to public past-paper compilations; otherwise practice) =====
+     NOTE: Because this is a static v1 with no server, we label questions we cannot independently verify as PRACTICE.
+     The 'verifiedPastQuestions' array below is intentionally minimal and marked as compilation-sourced.
+  */
+
+  /* ---- PHC ---- */
+  Q({id:'q1', q:'Primary Health Care was formally declared at which international conference?', options:['Alma-Ata Conference, 1978','Ottawa Charter, 1986','Bamako Initiative, 1987','World Health Assembly, 1977'], correct:0, explanation:'The Alma-Ata Declaration of 1978, jointly organised by WHO and UNICEF, formally declared Primary Health Care as the key to achieving Health for All.', whyOthers:['Ottawa Charter (1986) focused on health promotion.','Bamako Initiative (1987) focused on essential drugs in Africa.','WHA 1977 was earlier and did not declare PHC.'], course:'c-phc', topic:'t-phc-intro', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'WHO/UNICEF Alma-Ata Declaration 1978', verified:false, clinical:false, exam:'High-frequency — memorise the year and city.'}),
+  Q({id:'q2', q:'Which of the following is NOT one of the eight components of Primary Health Care?', options:['Education concerning prevailing health problems','Promotion of food supply and proper nutrition','Provision of free housing for all citizens','Immunisation against major infectious diseases'], correct:2, explanation:'Free housing is not a PHC component. The eight components include health education, food & nutrition, water & sanitation, MCH/FP, immunisation, prevention of endemic diseases, treatment of common diseases, and essential drugs.', whyOthers:['Options A, B and D are all explicitly listed components of PHC.'], course:'c-phc', topic:'t-phc-principles', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'WHO PHC components', verified:false, clinical:false, exam:'Know all 8 components — commonly tested.'}),
+  Q({id:'q3', q:'The Ward Minimum Health Care Package in Nigeria includes all EXCEPT:', options:['Immunisation services','Antenatal care','Open-heart surgery','Treatment of common diseases and injuries'], correct:2, explanation:'Open-heart surgery is a tertiary-level service, not part of the Ward Minimum Package.', whyOthers:['Immunisation, ANC and common disease treatment are all in the package.'], course:'c-phc', topic:'t-phc-ward', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'NPHCDA Ward Health System', verified:false, clinical:false, exam:'Focus on what is NOT included — a common format.'}),
+  Q({id:'q4', q:'The three tiers of health care in Nigeria are:', options:['Primary, Secondary, Tertiary','Local, State, Federal','Preventive, Curative, Rehabilitative','Community, Ward, Zonal'], correct:0, explanation:'The three tiers are Primary (LGA/ward), Secondary (state), and Tertiary (federal).', whyOthers:['B is the administrative division, not the health-care tiers.','C describes levels of care, not tiers.','D is not a standard classification.'], course:'c-phc', topic:'t-phc-nigeria', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'Nigeria National Health Policy', verified:false, clinical:false, exam:'Very common recall question.'}),
+  Q({id:'q5', q:'A population of 20,000 is served by a Ward Health Centre. This is consistent with the recommended ward population because:', options:['A ward typically covers 10,000–30,000 people','A ward must cover exactly 50,000 people','Ward population must be less than 5,000','Ward population has no guideline'], correct:0, explanation:'A ward typically covers 10,000–30,000 people, so 20,000 fits within the recommended range.', whyOthers:['B and C are incorrect ranges.','D is false — guidelines exist.'], course:'c-phc', topic:'t-phc-nigeria', level:'CHEW', difficulty:'Moderate', type:'high_yield_question', source:'NPHCDA Ward Health System', verified:false, clinical:false, exam:'Apply knowledge of ward population range.'}),
+
+  /* ---- BURNING BRAIN — PHC ---- */
+  Q({id:'q6', q:'A CHEW is posted to a rural ward with high child mortality from malaria and diarrhoea. Which combination of PHC principles BEST reflects the appropriate approach?', options:['Equitable distribution + community participation + inter-sectoral collaboration','Curative services only + hospital referral','Private practice + user fees for sustainability','Centralised planning without community involvement'], correct:0, explanation:'Effective PHC uses equity, community participation and inter-sectoral collaboration to address the social determinants of malaria and diarrhoea (water, sanitation, nets, education).', whyOthers:['B ignores prevention and community.','C undermines equity and access.','D contradicts community participation.'], course:'c-phc', topic:'t-phc-principles', level:'CHEW', difficulty:'Challenging', type:'burning_brain', source:'WHO PHC principles', verified:false, clinical:true, exam:'Scenario-based application of principles.'}),
+
+  /* ---- CBHC ---- */
+  Q({id:'q7', q:'Community diagnosis is best defined as:', options:['Diagnosis of an individual patient','Comprehensive assessment of the health status of a community and its determinants','A laboratory test done in the community','A type of medical imaging'], correct:1, explanation:'Community diagnosis assesses the health status of a whole community and the factors that influence it.', whyOthers:['A is clinical diagnosis.','C and D are incorrect definitions.'], course:'c-cbhc', topic:'t-cbhc-diag', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'Community Health curriculum', verified:false, clinical:false, exam:'Definition question — very common.'}),
+  Q({id:'q8', q:'Which is the FIRST step in community diagnosis?', options:['Implementing interventions','Identifying the community and defining boundaries','Presenting findings to the community','Collecting primary data'], correct:1, explanation:'You must first identify and define the community before any data collection or intervention.', whyOthers:['Implementation (A) comes after planning.','Presentation (C) comes after data analysis.','Data collection (D) requires the community to be defined first.'], course:'c-cbhc', topic:'t-cbhc-diag', level:'CHEW', difficulty:'Moderate', type:'high_yield_question', source:'Community diagnosis process', verified:false, clinical:false, exam:'Order-of-steps question — read carefully.'}),
+
+  /* ---- ANATOMY ---- */
+  Q({id:'q9', q:'The normal resting pulse rate for a healthy adult is:', options:['40–60 bpm','60–100 bpm','100–140 bpm','140–180 bpm'], correct:1, explanation:'Normal adult resting pulse is 60–100 beats per minute.', whyOthers:['40–60 is bradycardia range.','100–140 is tachycardia.','140–180 is severe tachycardia.'], course:'c-anat', topic:'t-anat-cvs', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'Basic physiology', verified:false, clinical:true, exam:'Memorise normal ranges.'}),
+  Q({id:'q10', q:'Which blood vessel carries oxygenated blood AWAY from the heart?', options:['Pulmonary artery','Pulmonary vein','Superior vena cava','Inferior vena cava'], correct:0, explanation:'The pulmonary artery is the exception — it carries deoxygenated blood away from the heart to the lungs. The pulmonary vein carries oxygenated blood to the heart. All other arteries carry oxygenated blood away from the heart.', whyOthers:['Pulmonary vein carries oxygenated blood TO the heart.','Vena cavae carry deoxygenated blood to the heart.'], course:'c-anat', topic:'t-anat-cvs', level:'CHEW', difficulty:'Moderate', type:'high_yield_question', source:'Cardiovascular physiology', verified:false, clinical:false, exam:'Classic exception — pulmonary vessels.'}),
+
+  /* ---- NUTRITION ---- */
+  Q({id:'q11', q:'The MUAC cut-off indicating Severe Acute Malnutrition in children 6–59 months is:', options:['< 11.5 cm','11.5–12.5 cm','> 12.5 cm','< 14 cm'], correct:0, explanation:'MUAC < 11.5 cm indicates Severe Acute Malnutrition (SAM) and requires urgent referral.', whyOthers:['11.5–12.5 cm = MAM (moderate).','> 12.5 cm = normal.','< 14 cm is not a standard cut-off.'], course:'c-nut', topic:'t-nut-assessment', level:'JCHEW / CHEW', difficulty:'Moderate', type:'high_yield_question', source:'WHO/UNICEF CMAM guidelines', verified:false, clinical:true, exam:'Memorise MUAC cut-offs.'}),
+  Q({id:'q12', q:'Which type of malnutrition is characterised by oedema, moon face and skin changes?', options:['Marasmus','Kwashiorkor','Marasmic-kwashiorkor','Obesity'], correct:1, explanation:'Kwashiorkor results from protein deficiency and is characterised by oedema, moon face, hair and skin changes.', whyOthers:['Marasmus is severe overall deficiency with wasting, no oedema.','Marasmic-kwashiorkor has both features.','Obesity is overnutrition.'], course:'c-nut', topic:'t-nut-malnutrition', level:'JCHEW / CHEW', difficulty:'Moderate', type:'practice_question', source:'Nutrition textbooks', verified:false, clinical:true, exam:'Differentiate kwashiorkor vs marasmus.'}),
+
+  /* ---- COMMUNICABLE DISEASES ---- */
+  Q({id:'q13', q:'The vector responsible for transmitting malaria is:', options:['Female Anopheles mosquito','Male Anopheles mosquito','Aedes aegypti mosquito','Culex mosquito'], correct:0, explanation:'Only the female Anopheles mosquito transmits malaria; she needs a blood meal for egg development.', whyOthers:['Male mosquitoes do not bite.','Aedes transmits dengue, Zika, yellow fever.','Culex transmits filariasis and some encephalitis.'], course:'c-cd', topic:'t-cd-malaria', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'WHO malaria facts', verified:false, clinical:true, exam:'Very common — know the vector.'}),
+  Q({id:'q14', q:'Which of the following is a general danger sign in a child under 5 according to IMCI?', options:['Cough for 2 days','Unable to drink or breastfeed','Mild fever','Runny nose'], correct:1, explanation:'Inability to drink or breastfeed is one of the IMCI general danger signs requiring urgent referral.', whyOthers:['Short-duration cough, mild fever and runny nose are common non-danger symptoms.'], course:'c-mch', topic:'t-mch-imci', level:'JCHEW / CHEW', difficulty:'Moderate', type:'high_yield_question', source:'WHO IMCI chart booklet', verified:false, clinical:true, exam:'Memorise the 4 general danger signs.'}),
+  Q({id:'q15', q:'A patient with cough of 2 weeks or more, night sweats and weight loss should be suspected of having:', options:['Pneumonia','Tuberculosis','Asthma','Bronchitis'], correct:1, explanation:'Chronic cough (>2 weeks) with night sweats and weight loss is the classic TB screening triad.', whyOthers:['Pneumonia is acute.','Asthma is episodic with wheeze.','Bronchitis is usually acute or with sputum.'], course:'c-cd', topic:'t-cd-tb', level:'JCHEW / CHEW', difficulty:'Moderate', type:'high_yield_question', source:'National TB Programme', verified:false, clinical:true, exam:'Classic TB screening question.'}),
+  Q({id:'q16', q:'The mainstay of cholera management is:', options:['Antibiotics alone','Rehydration','Surgery','Blood transfusion'], correct:1, explanation:'Aggressive rehydration (ORS and/or IV fluids) is the cornerstone of cholera treatment. Antibiotics are adjunctive.', whyOthers:['Antibiotics alone cannot correct dehydration.','Surgery and blood transfusion are not treatments for cholera.'], course:'c-cd', topic:'t-cd-cholera', level:'JCHEW / CHEW', difficulty:'Moderate', type:'practice_question', source:'WHO cholera guidelines', verified:false, clinical:true, exam:'Emphasise rehydration first.'}),
+
+  /* ---- BURNING BRAIN — CD ---- */
+  Q({id:'q17', q:'During a cholera outbreak in a rural community with no safe water, a CHEW must prioritise which combination of actions?', options:['Case management + safe water provision + community education + notification','Only treat cases at the health centre','Wait for laboratory confirmation before any action','Refer all cases to the state capital'], correct:0, explanation:'Outbreak response requires simultaneous case management, water chlorination, hygiene education and immediate notification. Waiting or referring everyone delays control.', whyOthers:['B misses prevention.','C delays response — cholera is clinically diagnosed in outbreaks.','D is impractical and delays care.'], course:'c-cd', topic:'t-cd-cholera', level:'CHEW', difficulty:'Advanced', type:'burning_brain', source:'WHO outbreak response', verified:false, clinical:true, exam:'Multi-step outbreak reasoning.'}),
+
+  /* ---- NCD ---- */
+  Q({id:'q18', q:'Hypertension is defined as persistent blood pressure of:', options:['≥ 120/80 mmHg','≥ 130/80 mmHg','≥ 140/90 mmHg','≥ 160/100 mmHg'], correct:2, explanation:'Hypertension is defined as persistent BP ≥ 140/90 mmHg on two or more occasions.', whyOthers:['120/80 is normal.','130/80 is elevated/Stage 1 in some classifications but the classic definition is ≥140/90.','160/100 is severe hypertension, not the defining threshold.'], course:'c-ncd', topic:'t-ncd-htn', level:'JCHEW / CHEW', difficulty:'Moderate', type:'high_yield_question', source:'WHO/ISH guidelines', verified:false, clinical:true, exam:'Know the defining threshold.'}),
+  Q({id:'q19', q:'Which of the following is a classic symptom of diabetes mellitus?', options:['Polyuria, polydipsia, polyphagia','Cough and night sweats','Weight gain and constipation','Joint pain and rash'], correct:0, explanation:'The classic triad of diabetes is polyuria (frequent urination), polydipsia (excessive thirst) and polyphagia (excessive hunger).', whyOthers:['B suggests TB.','C and D are non-specific.'], course:'c-ncd', topic:'t-ncd-dm', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'Medical textbooks', verified:false, clinical:true, exam:'Classic triad — frequently tested.'}),
+
+  /* ---- MCH ---- */
+  Q({id:'q20', q:'The recommended number of ANC contacts per WHO 2016 guidelines is at least:', options:['4','6','8','10'], correct:2, explanation:'WHO 2016 recommends at least 8 ANC contacts for a positive pregnancy experience.', whyOthers:['4 was the older FANC model.','6 and 10 are not the WHO recommendation.'], course:'c-mch', topic:'t-mch-anc', level:'CHEW', difficulty:'Moderate', type:'high_yield_question', source:'WHO 2016 ANC guidelines', verified:false, clinical:true, exam:'Updated from 4 to 8 contacts.'}),
+  Q({id:'q21', q:'Which vaccine is given at birth in Nigeria?', options:['Measles','BCG and Hepatitis B birth dose','Penta','Yellow fever'], correct:1, explanation:'BCG and Hepatitis B birth dose (and OPV 0) are given at birth.', whyOthers:['Measles is at 9 months.','Penta starts at 6 weeks.','Yellow fever is not in the routine schedule in this form.'], course:'c-mch', topic:'t-mch-imm', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'NPI schedule Nigeria', verified:false, clinical:true, exam:'Know birth-dose vaccines.'}),
+  Q({id:'q22', q:'Which of the following is a danger sign in pregnancy requiring urgent referral?', options:['Mild nausea in first trimester','Vaginal bleeding','Occasional backache','Mild ankle swelling at term'], correct:1, explanation:'Vaginal bleeding in pregnancy is a danger sign requiring urgent referral.', whyOthers:['Mild nausea, occasional backache and mild ankle swelling can be normal.'], course:'c-mch', topic:'t-mch-anc', level:'JCHEW / CHEW', difficulty:'Moderate', type:'high_yield_question', source:'WHO/National ANC guidelines', verified:false, clinical:true, exam:'Danger sign recognition.'}),
+
+  /* ---- BURNING BRAIN — MCH ---- */
+  Q({id:'q23', q:'A 2-month-old infant presents with cough, fast breathing (60/min) and chest indrawing. According to IMCI, this child should be classified as:', options:['No pneumonia — simple cough','Pneumonia','Severe pneumonia or very severe disease','Asthma'], correct:2, explanation:'Fast breathing with chest indrawing (in a child with cough/difficult breathing) is classified as severe pneumonia/very severe disease and requires urgent referral.', whyOthers:['A would apply if no fast breathing or chest indrawing.','B would apply if fast breathing but no chest indrawing.','Asthma is not an IMCI classification for this age.'], course:'c-mch', topic:'t-mch-imci', level:'CHEW', difficulty:'Advanced', type:'burning_brain', source:'WHO IMCI chart booklet', verified:false, clinical:true, exam:'Apply IMCI classification logic.'}),
+
+  /* ---- HEALTH EDUCATION ---- */
+  Q({id:'q24', q:'Which of the following is a mass method of health education?', options:['Counselling','Role play','Radio jingle','Group discussion'], correct:2, explanation:'A radio jingle reaches a mass audience; counselling and group discussion are individual/group methods.', whyOthers:['Counselling is individual.','Role play and group discussion are group methods.'], course:'c-healthedu', topic:'t-he-methods', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'Health education textbooks', verified:false, clinical:false, exam:'Classify methods correctly.'}),
+  Q({id:'q25', q:'The stages of change model was proposed by:', options:['Prochaska & DiClemente','Freud','Maslow','Skinner'], correct:0, explanation:'The Transtheoretical Model (Stages of Change) was developed by Prochaska and DiClemente.', whyOthers:['Freud — psychoanalysis.','Maslow — hierarchy of needs.','Skinner — behaviourism.'], course:'c-healthedu', topic:'t-he-behaviour', level:'CHEW', difficulty:'Moderate', type:'high_yield_question', source:'Health behaviour theory', verified:false, clinical:false, exam:'Know the theorist.'}),
+
+  /* ---- ETHICS ---- */
+  Q({id:'q26', q:'The ethical principle of "doing no harm" is called:', options:['Autonomy','Beneficence','Non-maleficence','Justice'], correct:2, explanation:'Non-maleficence means "do no harm".', whyOthers:['Autonomy = respect for patient decisions.','Beneficence = act in patient\'s best interest.','Justice = fairness.'], course:'c-ethics', topic:'t-eth-intro', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'Bioethics', verified:false, clinical:false, exam:'Know the four principles.'}),
+  Q({id:'q27', q:'Which body regulates Community Health Practitioners in Nigeria?', options:['NMA','CHPRBN','NANNM','MDCN'], correct:1, explanation:'CHPRBN — Community Health Practitioners Registration Board of Nigeria — regulates CHEWs, JCHEWs and CHOs.', whyOthers:['NMA = Nigeria Medical Association (doctors).','NANNM = nurses/midwives.','MDCN = doctors.'], course:'c-ethics', topic:'t-eth-chprbn', level:'JCHEW / CHEW', difficulty:'Easy', type:'high_yield_question', source:'CHPRBN Act', verified:false, clinical:false, exam:'Know your regulator.'}),
+
+  /* ---- CLINICAL ---- */
+  Q({id:'q28', q:'When counting a patient\'s pulse, you should count for:', options:['10 seconds','15 seconds','30 seconds','Full 60 seconds'], correct:3, explanation:'Count for a full 60 seconds for accuracy, especially in irregular rhythms.', whyOthers:['Shorter counts multiply error.'], course:'c-clin', topic:'t-clin-vitals', level:'JCHEW / CHEW', difficulty:'Easy', type:'practical_question', source:'Clinical skills', verified:false, clinical:true, exam:'Practical exam favourite.'}),
+  Q({id:'q29', q:'The WHO "5 Moments for Hand Hygiene" includes all EXCEPT:', options:['Before touching a patient','After touching patient surroundings','Before clean/aseptic procedure','Before going home'], correct:3, explanation:'The 5 moments are: before patient contact, before aseptic procedure, after body fluid exposure, after patient contact, after touching surroundings. "Before going home" is not one of them.', whyOthers:['A, B and C are all part of the 5 moments.'], course:'c-clin', topic:'t-clin-ipc', level:'JCHEW / CHEW', difficulty:'Moderate', type:'high_yield_question', source:'WHO IPC guidelines', verified:false, clinical:true, exam:'Memorise the 5 moments.'}),
+  Q({id:'q30', q:'In the AVPU scale, "P" stands for:', options:['Pulse','Pain response','Pressure','Pupil'], correct:1, explanation:'AVPU = Alert, Verbal, Pain, Unresponsive.', whyOthers:['Pulse, pressure and pupil are different assessments.'], course:'c-clin', topic:'t-clin-assess', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'First aid / assessment', verified:false, clinical:true, exam:'Know the acronym.'}),
+
+  /* ---- BURNING BRAIN — CLINICAL ---- */
+  Q({id:'q31', q:'A patient collapses in the health centre. You check and find they are unresponsive and not breathing normally. Your FIRST action within scope is:', options:['Give oral glucose','Open the airway and give rescue breaths / call for help','Take blood pressure','Wait for the doctor'], correct:1, explanation:'Airway and breathing come first (ABC). Call for help and initiate basic life support within your training. Never delay.', whyOthers:['Glucose is only for suspected hypoglycaemia and requires an airway first.','BP is not the priority.','Waiting delays life-saving action.'], course:'c-clin', topic:'t-clin-emerg', level:'CHEW', difficulty:'Advanced', type:'burning_brain', source:'Basic life support', verified:false, clinical:true, exam:'ABC priority.'}),
+
+  /* ---- STATISTICS ---- */
+  Q({id:'q32', q:'Infant mortality rate is calculated as:', options:['(Deaths under 1 year ÷ live births) × 1000','(Deaths under 5 years ÷ population) × 1000','(Live births ÷ population) × 1000','(Maternal deaths ÷ live births) × 100,000'], correct:0, explanation:'IMR = deaths of infants under 1 year per 1000 live births in a given year.', whyOthers:['B is under-5 mortality rate.','C is crude birth rate.','D is maternal mortality ratio.'], course:'c-stats', topic:'t-stats-measures', level:'CHEW', difficulty:'Moderate', type:'high_yield_question', source:'Epidemiology', verified:false, clinical:false, exam:'Know each indicator formula.'}),
+
+  /* ---- PHARM ---- */
+  Q({id:'q33', q:'Which route of drug administration has the fastest onset?', options:['Oral','Sublingual','Intravenous','Topical'], correct:2, explanation:'Intravenous administration delivers the drug directly into the bloodstream — fastest onset.', whyOthers:['Oral is slower (first-pass).','Sublingual is fast but not as fast as IV.','Topical is slow.'], course:'c-pharm', topic:'t-pharm-admin', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'Pharmacology', verified:false, clinical:true, exam:'Fastest route = IV.'}),
+  Q({id:'q34', q:'The "5 Rights" of medication administration include all EXCEPT:', options:['Right patient','Right drug','Right price','Right dose'], correct:2, explanation:'The 5 Rights are: patient, drug, dose, route and time. Price is not one of them.', whyOthers:['A, B and D are all correct rights.'], course:'c-pharm', topic:'t-pharm-essential', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'Nursing/pharmacy principles', verified:false, clinical:true, exam:'Know the 5 Rights.'}),
+
+  /* ---- HIGH-YIELD 2026–2028 PRACTICE (more) ---- */
+  Q({id:'q35', q:'Which of the following is the best way to prevent malaria in a community?', options:['Mass administration of antimalarials to everyone','Use of Long-Lasting Insecticidal Nets (LLINs) and environmental management','Isolating malaria patients','Closing all stagnant water sites only during rainy season'], correct:1, explanation:'LLINs and environmental management (clearing stagnant water) are proven community-level prevention measures.', whyOthers:['A is not sustainable or recommended.','C is not appropriate for malaria.','D is incomplete — year-round control is needed.'], course:'c-cd', topic:'t-cd-malaria', level:'JCHEW / CHEW', difficulty:'Moderate', type:'high_yield_question', source:'WHO malaria prevention', verified:false, clinical:true, exam:'Focus on prevention methods.'}),
+  Q({id:'q36', q:'Which of the following is a modifiable risk factor for hypertension?', options:['Age','Family history','High salt intake','Sex'], correct:2, explanation:'High salt intake is modifiable. Age, family history and sex are non-modifiable.', whyOthers:['A, B and D are non-modifiable.'], course:'c-ncd', topic:'t-ncd-htn', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'WHO NCD risk factors', verified:false, clinical:true, exam:'Modifiable vs non-modifiable.'}),
+  Q({id:'q37', q:'A child with MUAC of 11 cm and no medical complications should be:', options:['Given routine food and sent home','Referred to a CMAM programme for management of SAM','Admitted to a tertiary hospital immediately','Given antibiotics only'], correct:1, explanation:'MUAC < 11.5 cm with no complications = uncomplicated SAM → refer to CMAM/OTP for RUTF.', whyOthers:['A ignores the severe malnutrition.','C is for complicated cases.','Antibiotics alone do not treat malnutrition.'], course:'c-nut', topic:'t-nut-malnutrition', level:'CHEW', difficulty:'Moderate', type:'high_yield_question', source:'CMAM guidelines', verified:false, clinical:true, exam:'Apply MUAC + complication logic.'}),
+  Q({id:'q38', q:'The cold chain for vaccines must be maintained at:', options:['-20°C','0°C','+2°C to +8°C','+15°C to +25°C'], correct:2, explanation:'Most vaccines require +2°C to +8°C. Some (like OPV) may be stored frozen for long-term but thawed for use.', whyOthers:['-20°C is for frozen storage of certain vaccines.','0°C is too cold for many.','+15–25°C would damage most vaccines.'], course:'c-mch', topic:'t-mch-imm', level:'JCHEW / CHEW', difficulty:'Moderate', type:'high_yield_question', source:'WHO cold chain', verified:false, clinical:true, exam:'Know the range.'}),
+  Q({id:'q39', q:'Which of these is a standard precaution in IPC?', options:['Wearing gloves for all patients regardless of procedure','Hand hygiene before and after patient contact','Recapping needles after use','Reusing gloves between patients'], correct:1, explanation:'Hand hygiene is the single most important standard precaution.', whyOthers:['Gloves are not required for all contacts.','Recapping needles is unsafe.','Reusing gloves is unsafe.'], course:'c-clin', topic:'t-clin-ipc', level:'JCHEW / CHEW', difficulty:'Easy', type:'practice_question', source:'WHO IPC', verified:false, clinical:true, exam:'Hand hygiene is the key answer.'}),
+  Q({id:'q40', q:'In community diagnosis, which method is used to collect data directly from community members?', options:['Reviewing hospital records','Focus group discussion','Reading government reports','Analyzing existing surveys'], correct:1, explanation:'Focus group discussion is a primary data collection method involving community members directly.', whyOthers:['A, C and D are secondary data sources.'], course:'c-cbhc', topic:'t-cbhc-diag', level:'CHEW', difficulty:'Moderate', type:'high_yield_question', source:'Community diagnosis methods', verified:false, clinical:false, exam:'Primary vs secondary data.'})
+];
+
+/* ---- CLINICAL SCENARIOS ---- */
+const clinicalScenarios = [
+  {
+    id:'cs1', title:'Child with Fever and Difficulty Breathing', course:'c-mch', topic:'t-mch-imci', difficulty:'Moderate',
+    case:'A 14-month-old child is brought to the PHC centre by the mother. The child has had fever for 2 days, is not feeding well, and is breathing fast. On assessment: temperature 38.9°C, respiratory rate 58/min, chest indrawing present, no general danger signs.',
+    questions:[
+      { q:'What should be assessed FIRST?', options:['Weight and height','General danger signs and airway/breathing','Blood pressure','Urine output'], correct:1, explanation:'Always start with general danger signs and ABC — airway, breathing, circulation.', whyOthers:['Anthropometry is important but not first.','BP is not routine in this age.','Urine output is secondary.'], clinical:'IMCI approach begins with danger signs.' },
+      { q:'Which finding is a danger sign?', options:['Temperature 38.9°C','Chest indrawing','Not feeding well for 2 days','Fever for 2 days'], correct:1, explanation:'Chest indrawing in a child with cough/difficult breathing is a sign of severe pneumonia — a danger sign requiring urgent referral.', whyOthers:['Fever alone is not a general danger sign.','Poor feeding is concerning but not one of the 4 general danger signs unless "unable to feed".'], clinical:'Chest indrawing = severe pneumonia.' },
+      { q:'What is the appropriate classification?', options:['No pneumonia','Pneumonia','Severe pneumonia','Malaria only'], correct:2, explanation:'Cough/difficult breathing + fast breathing + chest indrawing = severe pneumonia. Requires urgent referral.', whyOthers:['A and B are less severe classifications.','Malaria may co-exist but does not explain the respiratory signs.'], clinical:'IMCI classification logic.' },
+      { q:'What should be done NEXT within scope?', options:['Give paracetamol and send home','Give first dose of appropriate antibiotic and refer urgently','Admit for observation only','Give ORS and review tomorrow'], correct:1, explanation:'Give the first dose of recommended antibiotic (per national guideline) and refer urgently to a facility with higher care.', whyOthers:['A and D delay care.','C delays definitive treatment.'], clinical:'Pre-referral treatment saves lives.' },
+      { q:'What information should be documented?', options:['Only the temperature','Full assessment findings, classification, treatment given and referral made','Just the child\'s name','Nothing — verbal handover is enough'], correct:1, explanation:'Complete documentation is essential for continuity and legal protection.', whyOthers:['Incomplete documentation risks patient safety.'], clinical:'Document everything.' },
+      { q:'What health education should be given?', options:['Only "come back if worse"','Danger signs to watch for, importance of completing treatment, prevention of pneumonia','No education needed','Only about immunisation'], correct:1, explanation:'Caregivers must know danger signs, treatment completion and prevention (immunisation, nutrition, hygiene).', whyOthers:['A is too vague.','C is negligent.','D is incomplete.'], clinical:'Comprehensive caregiver education.' }
+    ]
+  },
+  {
+    id:'cs2', title:'Pregnant Woman with Vaginal Bleeding', course:'c-mch', topic:'t-mch-anc', difficulty:'Challenging',
+    case:'A 28-year-old woman, G3P2, at 32 weeks gestation presents with painless vaginal bleeding. She is pale, pulse 110/min, BP 90/60 mmHg. She reports the bleeding started 2 hours ago.',
+    questions:[
+      { q:'What is the FIRST priority?', options:['Take a detailed history','Assess ABC, vital signs and degree of bleeding','Do a vaginal examination','Give oral iron'], correct:1, explanation:'Assess airway, breathing, circulation, vitals and bleeding — she is showing signs of shock (tachycardia, hypotension, pallor).', whyOthers:['History is important but after stabilisation assessment.','Vaginal examination is contraindicated in suspected placenta praevia until confirmed.','Oral iron is not for acute bleeding.'], clinical:'Shock assessment comes first.' },
+      { q:'Which danger sign is present?', options:['Mild ankle swelling','Painless vaginal bleeding with signs of shock','Occasional backache','Mild nausea'], correct:1, explanation:'Painless vaginal bleeding with shock is a life-threatening obstetric emergency (suspect placenta praevia).', whyOthers:['The other options are common minor complaints.'], clinical:'Obstetric emergency.' },
+      { q:'What should be done IMMEDIATELY within scope?', options:['Give IV fluids if trained, position, call for urgent referral/ambulance','Do a speculum examination','Give misoprostol','Send home with advice'], correct:0, explanation:'Stabilise (IV access/fluids if trained), position, and arrange urgent referral. Do not delay.', whyOthers:['B and C are not appropriate in this setting without confirmation.','D would be dangerous.'], clinical:'Stabilise and refer urgently.' },
+      { q:'What must NOT be done?', options:['Vaginal examination','IV access','Oxygen if available','Urgent referral'], correct:0, explanation:'Vaginal examination is contraindicated in suspected placenta praevia as it may provoke catastrophic haemorrhage.', whyOthers:['B, C and D are appropriate actions.'], clinical:'Key contraindication.' }
+    ]
+  }
+];
+
+/* ---- PRACTICAL SKILLS ---- */
+const practicalSkills = [
+  { id:'ps1', title:'Measuring Pulse Rate', course:'c-clin', purpose:'To assess heart rate, rhythm and volume as part of vital signs.', equipment:['Watch with second hand','Patient in comfortable position'], preparation:'Explain procedure to patient. Ensure patient has rested for at least 5 minutes.', procedure:['Wash hands','Position patient\'s arm comfortably','Place index and middle fingers over the radial artery at the wrist','Count beats for a full 60 seconds','Note rate, rhythm and volume','Record and compare with normal range'], precautions:['Do not use the thumb (it has its own pulse)','Count full minute if irregular','Note any medication affecting pulse'], commonMistakes:['Counting for 15 seconds and multiplying','Using thumb','Not allowing rest'], documentation:'Record rate, rhythm, volume, time, and any relevant observations.', whenToRefer:'Pulse < 60 or > 100 at rest, irregular rhythm, or weak/thready pulse — assess further and refer if symptomatic.', examPoints:['Always count for 60 seconds','Use 2 fingers not thumb','State normal range 60–100 bpm'] },
+  { id:'ps2', title:'Measuring Blood Pressure', course:'c-clin', purpose:'To screen for hypertension and assess cardiovascular status.', equipment:['Sphygmomanometer (correct cuff size)','Stethoscope','Chair and table'], preparation:'Patient seated, back supported, feet flat, arm at heart level. Rest 5 minutes. Avoid caffeine/smoking 30 min before.', procedure:['Wash hands','Apply cuff 2–3 cm above cubital fossa','Palpate brachial pulse','Inflate to 20–30 mmHg above estimated systolic','Deflate slowly at 2–3 mmHg/sec','Note systolic (first Korotkoff sound) and diastolic (last sound)','Record and repeat if needed'], precautions:['Use correct cuff size','Do not talk during measurement','Note both arms if first visit'], commonMistakes:['Cuff too small/large','Not resting patient','Deflating too fast','Rounding off readings'], documentation:'Record systolic/diastolic, arm used, position, time.', whenToRefer:'BP ≥ 140/90 on two occasions, or ≥ 180/120 (hypertensive crisis) — urgent referral.', examPoints:['Technique details','Correct cuff placement','Record both values'] },
+  { id:'ps3', title:'Measuring MUAC', course:'c-nut', purpose:'To screen children 6–59 months for acute malnutrition.', equipment:['MUAC tape'], preparation:'Explain to caregiver. Ensure child\'s left arm is bare and relaxed.', procedure:['Locate midpoint between tip of shoulder (acromion) and tip of elbow (olecranon)','Wrap tape around arm at midpoint','Ensure tape is snug but not tight','Read measurement at the window','Classify: <11.5 cm SAM, 11.5–12.5 cm MAM, >12.5 cm normal'], precautions:['Use correct arm (left)','Do not pull tape too tight','Measure to nearest 0.1 cm'], commonMistakes:['Wrong arm','Tape too tight/loose','Wrong midpoint','Reading incorrectly'], documentation:'Record MUAC, date, and classification.', whenToRefer:'MUAC < 11.5 cm or oedema — refer to CMAM programme.', examPoints:['Know cut-offs','Correct landmark identification'] },
+  { id:'ps4', title:'Hand Hygiene (WHO Technique)', course:'c-clin', purpose:'To prevent healthcare-associated infections.', equipment:['Soap and running water OR alcohol-based hand rub'], preparation:'Remove jewellery. Ensure nails are short and clean.', procedure:['Wet hands with water','Apply enough soap to cover all surfaces','Rub palm to palm','Right palm over left dorsum and vice versa','Palm to palm with fingers interlaced','Backs of fingers to opposing palms','Rotational rubbing of thumbs','Rotational rubbing of fingertips in palm','Rinse thoroughly','Dry with clean cloth or air dry'], precautions:['Duration 20–30 seconds','Cover all surfaces','Do not touch taps after washing'], commonMistakes:['Skipping steps','Too short duration','Missing thumbs/fingertips'], documentation:'Not usually documented but compliance monitored.', whenToRefer:'N/A — preventive measure.', examPoints:['WHO 5 Moments','Correct sequence','Duration'] },
+  { id:'ps5', title:'Administering Intramuscular Injection', course:'c-pharm', purpose:'To deliver medication into muscle for systemic effect.', equipment:['Syringe and needle','Medication','Alcohol swab','Sharps container','Gloves'], preparation:'Check prescription, 5 Rights, expiry, patient allergies. Explain to patient.', procedure:['Wash hands and wear gloves','Select site (deltoid, vastus lateralis, ventrogluteal)','Clean site with alcohol swab, allow to dry','Stretch skin or pinch (depending on site)','Insert needle at 90°','Aspirate (check no blood — if blood, withdraw and reposition)','Inject slowly','Withdraw and apply pressure','Dispose needle immediately in sharps container'], precautions:['Never recap needle','Use correct site for age','Use aseptic technique'], commonMistakes:['Recapping','Wrong site','Not aspirating (where indicated)','Reusing needles'], documentation:'Drug, dose, site, route, time, batch, signature.', whenToRefer:'Any adverse reaction — manage per protocol and refer.', examPoints:['5 Rights','Site selection','Safe disposal'] },
+  { id:'ps6', title:'Oral Rehydration Solution (ORS) Preparation', course:'c-cd', purpose:'To treat and prevent dehydration from diarrhoea/vomiting.', equipment:['ORS sachet','Clean water (1 litre)','Clean container','Spoon for mixing'], preparation:'Wash hands. Read sachet instructions.', procedure:['Boil water and allow to cool (or use safe water)','Empty one sachet into 1 litre of clean water','Stir until dissolved','Give small sips frequently','Discard after 24 hours','Continue breastfeeding alongside'], precautions:['Use correct volume of water','Do not add sugar/salt','Discard after 24 hours'], commonMistakes:['Wrong water volume','Adding extra sugar','Keeping beyond 24 hours'], documentation:'Amount given, frequency, and child\'s condition.', whenToRefer:'Severe dehydration, persistent vomiting, inability to drink — refer urgently.', examPoints:['Correct concentration','Continue feeding','Referral indications'] },
+  { id:'ps7', title:'Temperature Measurement', course:'c-clin', purpose:'To detect fever or hypothermia.', equipment:['Thermometer (digital preferred)','Alcohol swab'], preparation:'Explain to patient. Ensure thermometer is clean and functional.', procedure:['Clean thermometer with alcohol swab','For axillary: place in dry axilla, arm close to body','For oral: under tongue, mouth closed (older children/adults)','Wait until signal (digital) or 3 minutes (mercury)','Read and record','Clean thermometer'], precautions:['Do not use oral route in unconscious/convulsing patients','Avoid axillary if wet','Wait 15 min after hot/cold drinks for oral'], commonMistakes:['Incorrect placement','Reading too early','Not cleaning between patients'], documentation:'Temperature, route, time.', whenToRefer:'Fever > 38°C or hypothermia < 35°C — assess and refer if danger signs.', examPoints:['Normal range 36.5–37.5°C','Correct technique'] },
+  { id:'ps8', title:'Conducting Health Education Session', course:'c-healthedu', purpose:'To improve knowledge and promote healthy behaviour in individuals or groups.', equipment:['Visual aids (posters, charts)','Seating arrangement','Relevant materials'], preparation:'Assess learning needs. Set objectives. Choose appropriate method. Prepare materials.', procedure:['Greet and establish rapport','State the topic and its importance','Use simple language and visual aids','Encourage questions and participation','Demonstrate and allow practice where needed','Summarise key messages','Plan follow-up'], precautions:['Respect culture and beliefs','Avoid jargon','Use two-way communication'], commonMistakes:['Talking too much without participation','Using technical language','No visual aids','No evaluation'], documentation:'Topic, audience, date, key messages, attendance, evaluation.', whenToRefer:'N/A — preventive.', examPoints:['Principles of health education','Choosing appropriate methods'] }
+];
+
+/* ============================ 2. STATE LAYER =============================== */
+
+const STORAGE_KEY = 'ahmad_chew_academy_v1';
+
+const defaultState = {
+  theme: 'light',
+  progress: {},       // topicId -> {completed:true, ts}
+  bookmarks: [],      // {id, type, title, ts}
+  cbtHistory: [],     // {id, title, score, total, pct, timeUsed, date, topics:{topicId:{correct,total}}}
+  practiceHistory: [],// {id, qid, correct, ts, course, topic}
+  streak: {count:0, lastDate:null, dates:[]},
+  settings: {name:'Candidate'},
+  sessionCBT: null    // saved in-progress CBT
+};
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return JSON.parse(JSON.stringify(defaultState));
+    const parsed = JSON.parse(raw);
+    return Object.assign(JSON.parse(JSON.stringify(defaultState)), parsed);
+  }catch(e){ console.warn('State load error', e); return JSON.parse(JSON.stringify(defaultState)); }
+}
+function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ console.warn('State save error',e); } }
+
+let state = loadState();
+
+/* ============================ 3. HELPERS =================================== */
+
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+function esc(str){ return String(str??'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function toast(msg, timeout=2200){
+  const t = $('#toast');
+  t.querySelector('div').textContent = msg;
+  t.classList.remove('hidden'); t.classList.add('fade-in');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=> t.classList.add('hidden'), timeout);
+}
+
+function todayStr(){ const d = new Date(); return d.toISOString().slice(0,10); }
+
+function checkStreak(){
+  const today = todayStr();
+  const s = state.streak;
+  if(s.lastDate === today) return;
+  const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(s.lastDate === yesterday){ s.count += 1; }
+  else if(s.lastDate && s.lastDate !== today && s.lastDate !== yesterday){ s.count = 1; }
+  else if(!s.lastDate){ s.count = 1; }
+  s.lastDate = today;
+  if(!s.dates.includes(today)) s.dates.push(today);
+  if(s.dates.length > 60) s.dates = s.dates.slice(-60);
+  saveState();
+}
+
+function getCourse(id){ return courses.find(c=>c.id===id); }
+function getTopic(id){ return topics.find(t=>t.id===id); }
+function questionsByCourse(cid){ return questions.filter(q=>q.course===cid); }
+function topicProgress(courseId){
+  const c = getCourse(courseId); if(!c) return 0;
+  const done = c.topics.filter(t => state.progress[t]?.completed).length;
+  return c.topics.length ? Math.round((done / c.topics.length)*100) : 0;
+}
+function isBookmarked(id){ return state.bookmarks.some(b=>b.id===id); }
+
+function toggleBookmark(item, type, title){
+  const i = state.bookmarks.findIndex(b=>b.id===item);
+  if(i>=0) state.bookmarks.splice(i,1);
+  else state.bookmarks.unshift({id:item, type, title, ts:Date.now()});
+  saveState();
+  toast(i>=0 ? 'Removed from bookmarks' : 'Bookmarked');
+}
+
+function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function fmtTime(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const h = String(Math.floor(sec/3600)).padStart(2,'0');
+  const m = String(Math.floor((sec%3600)/60)).padStart(2,'0');
+  const s = String(sec%60).padStart(2,'0');
+  return `${h}:${m}:${s}`;
+}
+
+/* ============================ 4. VIEWS ===================================== */
+
+let currentRoute = { name:'home', params:{} };
+
+function navigate(name, params={}){
+  currentRoute = { name, params };
+  window.scrollTo({top:0, behavior:'instant'});
+  render();
+}
+
+/* ---- Layout ---- */
+function layout(content, opts={}){
+  const streak = state.streak.count;
+  const navLinks = [
+    {name:'home', label:'Home', icon:'🏠'},
+    {name:'courses', label:'Courses', icon:'📚'},
+    {name:'cbt', label:'CBT', icon:'🎓'},
+    {name:'performance', label:'Performance', icon:'📊'},
+    {name:'more', label:'More', icon:'⋯'}
+  ];
+  const active = currentRoute.name;
+  return `
+  <div class="min-h-screen flex flex-col">
+    <!-- Top bar -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800">
+      <div class="max-w-6xl mx-auto px-3 sm:px-5 h-14 flex items-center justify-between gap-2">
+        <button onclick="navigate('home')" class="flex items-center gap-2 text-left">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold shadow">A</div>
+          <div class="leading-tight">
+            <div class="text-[13px] sm:text-sm font-extrabold tracking-tight">AHMAD CHEW ACADEMY</div>
+            <div class="text-[10px] text-slate-500 dark:text-slate-400">Community Health Learning & CBT</div>
+          </div>
+        </button>
+        <div class="flex items-center gap-1.5">
+          <button onclick="navigate('search')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Search">🔍</button>
+          <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Theme">${state.theme==='dark'?'☀️':'🌙'}</button>
+          ${streak?`<div class="hidden sm:flex items-center gap-1 text-xs font-semibold bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2 py-1 rounded-lg">🔥 ${streak} day${streak>1?'s':''}</div>`:''}
+        </div>
+      </div>
+      <!-- Desktop nav -->
+      <nav class="hidden sm:block border-t border-slate-100 dark:border-slate-800">
+        <div class="max-w-6xl mx-auto px-5 flex gap-1 overflow-x-auto no-scrollbar">
+          ${navLinks.map(l=>`
+            <button onclick="navigate('${l.name}')" class="px-3 py-2 text-sm font-medium border-b-2 ${active===l.name?'border-brand-600 text-brand-700 dark:text-brand-400':'border-transparent text-slate-600 dark:text-slate-400 hover:text-brand-600'}">${l.icon} ${l.label}</button>
+          `).join('')}
+        </div>
+      </nav>
+    </header>
+
+    <main class="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-5 py-4 sm:py-6 pb-24 sm:pb-8 fade-in">${content}</main>
+
+    <!-- Mobile bottom nav -->
+    <nav class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-slate-200 dark:border-slate-800">
+      <div class="grid grid-cols-5">
+        ${navLinks.map(l=>`
+          <button onclick="navigate('${l.name}')" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium ${active===l.name?'text-brand-700 dark:text-brand-400':'text-slate-500 dark:text-slate-400'}">
+            <span class="text-lg">${l.icon}</span>${l.label}
+          </button>
+        `).join('')}
+      </div>
+    </nav>
+
+    <footer class="hidden sm:block border-t border-slate-200 dark:border-slate-800 mt-8">
+      <div class="max-w-6xl mx-auto px-5 py-6 text-xs text-slate-500 dark:text-slate-400 space-y-2">
+        <div class="font-semibold text-slate-700 dark:text-slate-300">AHMAD CHEW ACADEMY — By Ahmad Sani</div>
+        <p>Educational platform for Community Health students (JCHEW/CHEW). Not a substitute for official CHPRBN curriculum, institutional teaching, or professional supervision.</p>
+        <div class="flex flex-wrap gap-3 pt-1">
+          <button onclick="navigate('sources')" class="hover:text-brand-600">Sources & References</button>
+          <button onclick="navigate('about')" class="hover:text-brand-600">About</button>
+          <button onclick="navigate('disclaimer')" class="hover:text-brand-600">Disclaimer</button>
+        </div>
+      </div>
+    </footer>
+  </div>`;
+}
+
+/* ---- HOME ---- */
+function viewHome(){
+  const totalQ = questions.length;
+  const done = Object.values(state.progress).filter(p=>p.completed).length;
+  const recent = state.cbtHistory.slice(0,3);
+  const cards = [
+    {t:'📚 Continue Learning', d:'Pick up where you left off', go:"navigate('courses')", c:'from-brand-500 to-brand-700'},
+    {t:'🔥 Burning Brain', d:'Advanced reasoning questions', go:"navigate('burning')", c:'from-orange-500 to-red-600'},
+    {t:'🎯 High-Yield Practice', d:'2026–2028 focused practice', go:"navigate('highyield')", c:'from-amber-500 to-orange-600'},
+    {t:'📝 Past Questions', d:'Authentic + practice library', go:"navigate('past')", c:'from-sky-500 to-blue-700'},
+    {t:'🎓 CBT Examination', d:'Realistic timed CBT', go:"navigate('cbt')", c:'from-purple-500 to-indigo-700'},
+    {t:'🩺 Clinical Scenarios', d:'Case-based reasoning', go:"navigate('clinical')", c:'from-teal-500 to-emerald-700'},
+    {t:'🩺 Practical Skills', d:'Step-by-step procedures', go:"navigate('skills')", c:'from-cyan-500 to-teal-700'},
+    {t:'📊 My Performance', d:'Analytics & weak areas', go:"navigate('performance')", c:'from-slate-600 to-slate-800'},
+    {t:'📅 Daily Challenge', d:'Question of the day + quiz', go:"navigate('daily')", c:'from-pink-500 to-rose-700'},
+    {t:'🔖 Bookmarks', d:'Saved items', go:"navigate('bookmarks')", c:'from-lime-500 to-green-700'}
+  ];
+  return layout(`
+    <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-brand-700 to-emerald-800 text-white p-6 sm:p-10 shadow-xl">
+      <div class="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10"></div>
+      <div class="absolute -right-4 top-24 w-24 h-24 rounded-full bg-white/10"></div>
+      <div class="relative">
+        <div class="inline-flex items-center gap-2 bg-white/15 px-3 py-1 rounded-full text-xs font-semibold mb-3">Community Health • JCHEW / CHEW</div>
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">AHMAD CHEW ACADEMY</h1>
+        <p class="mt-2 text-sm sm:text-base text-brand-50 max-w-2xl">Your Community Health Learning Companion — digital handouts, burning brain questions, clinical scenarios, practical skills and a realistic CBT examination system.</p>
+        <div class="mt-5 flex flex-wrap gap-2">
+          <button onclick="navigate('courses')" class="px-4 py-2.5 rounded-xl bg-white text-brand-700 font-semibold text-sm shadow hover:bg-brand-50">Start Learning</button>
+          <button onclick="navigate('cbt')" class="px-4 py-2.5 rounded-xl bg-brand-900/40 border border-white/30 text-white font-semibold text-sm hover:bg-brand-900/60">Take CBT Exam</button>
+        </div>
+        <div class="mt-6 grid grid-cols-3 gap-3 max-w-md">
+          <div class="bg-white/10 rounded-xl p-3"><div class="text-xl font-bold">${courses.length}</div><div class="text-[11px] text-brand-100">Courses</div></div>
+          <div class="bg-white/10 rounded-xl p-3"><div class="text-xl font-bold">${topics.length}</div><div class="text-[11px] text-brand-100">Topics</div></div>
+          <div class="bg-white/10 rounded-xl p-3"><div class="text-xl font-bold">${totalQ}</div><div class="text-[11px] text-brand-100">Questions</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        ${cards.map(c=>`
+          <button onclick="${c.go}" class="group text-left rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400 dark:hover:border-brand-600 p-4 shadow-sm hover:shadow-md transition">
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-br ${c.c} flex items-center justify-center text-white text-lg mb-3 group-hover:scale-105 transition">${c.t.slice(0,2)}</div>
+            <div class="font-bold text-sm">${c.t.slice(2)}</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${c.d}</div>
+          </button>
+        `).join('')}
+      </div>
+    </section>
+
+    <section class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="lg:col-span-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-bold">Your Learning Snapshot</h2>
+          <button onclick="navigate('performance')" class="text-xs text-brand-600 hover:underline">View all →</button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><div class="text-2xl font-extrabold text-brand-700 dark:text-brand-400">${done}</div><div class="text-[11px] text-slate-500">Topics completed</div></div>
+          <div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><div class="text-2xl font-extrabold text-brand-700 dark:text-brand-400">${state.cbtHistory.length}</div><div class="text-[11px] text-slate-500">CBT exams</div></div>
+          <div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><div class="text-2xl font-extrabold text-brand-700 dark:text-brand-400">${state.streak.count}</div><div class="text-[11px] text-slate-500">Day streak</div></div>
+          <div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><div class="text-2xl font-extrabold text-brand-700 dark:text-brand-400">${state.bookmarks.length}</div><div class="text-[11px] text-slate-500">Bookmarks</div></div>
+        </div>
+      </div>
+      <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+        <h2 class="font-bold mb-3">🔥 Daily Challenge</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Question of the day + 5-question quiz + revision point.</p>
+        <button onclick="navigate('daily')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-semibold text-sm shadow">Start Today's Challenge</button>
+      </div>
+    </section>
+
+    ${recent.length?`
+    <section class="mt-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+      <h2 class="font-bold mb-3">Recent CBT Exams</h2>
+      <div class="space-y-2">
+        ${recent.map(h=>`
+          <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800">
+            <div class="min-w-0">
+              <div class="text-sm font-semibold truncate">${esc(h.title)}</div>
+              <div class="text-[11px] text-slate-500">${new Date(h.date).toLocaleString()}</div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-sm font-bold ${h.pct>=50?'text-green-600':'text-red-600'}">${h.pct}%</div>
+              <div class="text-[11px] text-slate-500">${h.score}/${h.total}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </section>`:''}
+  `);
+}
+
+/* ---- COURSES ---- */
+function viewCourses(){
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">📚 Courses</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Curriculum-aligned Community Health courses for JCHEW and CHEW.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      ${courses.map(c=>{
+        const pct = topicProgress(c.id);
+        const qCount = questionsByCourse(c.id).length;
+        return `
+        <button onclick="navigate('course',{id:'${c.id}'})" class="text-left rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400 p-4 shadow-sm hover:shadow-md transition">
+          <div class="flex items-start justify-between gap-2">
+            <div class="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 flex items-center justify-center font-bold">${c.title.slice(0,1)}</div>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">${c.level}</span>
+          </div>
+          <div class="mt-3 font-bold text-sm">${c.title}</div>
+          <div class="text-[11px] text-slate-500 mt-0.5 font-mono">${c.code}</div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">${c.desc}</p>
+          <div class="mt-3">
+            <div class="flex justify-between text-[11px] text-slate-500 mb-1"><span>Progress</span><span>${pct}%</span></div>
+            <div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div class="h-full bg-brand-600" style="width:${pct}%"></div></div>
+          </div>
+          <div class="mt-3 flex gap-2 text-[11px] text-slate-500">
+            <span>📖 ${c.topics.length} topics</span><span>❓ ${qCount} Qs</span>
+          </div>
+        </button>`;
+      }).join('')}
+    </div>
+  `);
+}
+
+/* ---- COURSE DETAIL ---- */
+function viewCourse(params){
+  const c = getCourse(params.id);
+  if(!c) return layout(`<div class="rounded-2xl bg-white dark:bg-slate-900 border p-6 text-center text-slate-500">Course not found.</div>`);
+  const pct = topicProgress(c.id);
+  const cQs = questionsByCourse(c.id);
+  const cPast = cQs.filter(q=>q.type==='authentic_past_question');
+  const cBurn = cQs.filter(q=>q.type==='burning_brain');
+  const cScen = clinicalScenarios.filter(s=>s.course===c.id);
+  const cSkills = practicalSkills.filter(s=>s.course===c.id);
+
+  const tabs = [
+    {id:'topics', label:'📖 Topics'},
+    {id:'handout', label:'📝 Handout'},
+    {id:'questions', label:'❓ Questions'},
+    {id:'past', label:'📝 Past Qs'},
+    {id:'burning', label:'🔥 Burning Brain'},
+    {id:'scenarios', label:'🩺 Scenarios'},
+    {id:'skills', label:'🩺 Skills'},
+    {id:'cbt', label:'🎓 CBT'}
+  ];
+  const activeTab = params.tab || 'topics';
+
+  const tabContent = () => {
+    if(activeTab==='topics'){
+      return `<div class="space-y-2">${c.topics.map(tid=>{
+        const t = getTopic(tid); if(!t) return '';
+        const done = state.progress[tid]?.completed;
+        return `<button onclick="navigate('topic',{id:'${tid}'})" class="w-full text-left flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400">
+          <div class="w-8 h-8 rounded-lg ${done?'bg-green-100 dark:bg-green-900/40 text-green-700':'bg-slate-100 dark:bg-slate-800 text-slate-500'} flex items-center justify-center text-sm">${done?'✓':'○'}</div>
+          <div class="min-w-0 flex-1">
+            <div class="font-semibold text-sm truncate">${t.title}</div>
+            <div class="text-[11px] text-slate-500">${t.difficulty} • ${t.time}</div>
+          </div>
+          <span class="text-slate-400">→</span>
+        </button>`;
+      }).join('')}</div>`;
+    }
+    if(activeTab==='handout'){
+      return `<div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+        <h3 class="font-bold mb-2">${c.title} — Course Handout Overview</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">${c.desc}</p>
+        <h4 class="font-semibold text-sm mt-3 mb-1">Learning Objectives</h4>
+        <ul class="list-disc pl-5 text-sm space-y-1">${c.objectives.map(o=>`<li>${o}</li>`).join('')}</ul>
+        <h4 class="font-semibold text-sm mt-4 mb-1">Topics in this Course</h4>
+        <ol class="list-decimal pl-5 text-sm space-y-1">${c.topics.map(tid=>`<li>${getTopic(tid)?.title||''}</li>`).join('')}</ol>
+        <p class="text-xs text-slate-500 mt-4">Open each topic for the full detailed handout with objectives, explanations, definitions, prevention, management within scope, exam focus and review questions.</p>
+      </div>`;
+    }
+    if(activeTab==='questions'){
+      return questionList(cQs, `${c.title} — Practice Questions`);
+    }
+    if(activeTab==='past'){
+      if(!cPast.length) return emptyBlock('No verified authentic past questions are currently available for this course. Practice questions and high-yield items remain available.');
+      return questionList(cPast, `${c.title} — Past Questions`);
+    }
+    if(activeTab==='burning'){
+      if(!cBurn.length) return emptyBlock('No Burning Brain questions for this course yet.');
+      return questionList(cBurn, `🔥 Burning Brain — ${c.title}`);
+    }
+    if(activeTab==='scenarios'){
+      if(!cScen.length) return emptyBlock('No clinical scenarios for this course yet.');
+      return `<div class="space-y-3">${cScen.map(s=>`
+        <button onclick="navigate('scenario',{id:'${s.id}'})" class="w-full text-left rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400 p-4">
+          <div class="font-bold text-sm">🩺 ${s.title}</div>
+          <div class="text-[11px] text-slate-500 mt-1">${s.difficulty} • ${s.questions.length} questions</div>
+        </button>`).join('')}</div>`;
+    }
+    if(activeTab==='skills'){
+      if(!cSkills.length) return emptyBlock('No practical skills listed for this course yet.');
+      return `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${cSkills.map(s=>`
+        <button onclick="navigate('skill',{id:'${s.id}'})" class="text-left rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400 p-4">
+          <div class="font-bold text-sm">🩺 ${s.title}</div>
+          <div class="text-[11px] text-slate-500 mt-1">${s.purpose}</div>
+        </button>`).join('')}</div>`;
+    }
+    if(activeTab==='cbt'){
+      return `<div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+        <h3 class="font-bold">🎓 Course CBT — ${c.title}</h3>
+        <p class="text-sm text-slate-500 mt-2">Take a timed CBT examination using questions from this course only.</p>
+        <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+          <div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><div class="font-bold">${cQs.length}</div><div class="text-[11px] text-slate-500">Available Qs</div></div>
+          <div class="rounded-xl bg-slate-50 dark:bg-slate-800 p-3"><div class="font-bold">10 / 20</div><div class="text-[11px] text-slate-500">Recommended</div></div>
+        </div>
+        <button onclick="startCourseCBT('${c.id}')" class="mt-4 w-full sm:w-auto px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm">Start Course CBT</button>
+      </div>`;
+    }
+    return '';
+  };
+
+  return layout(`
+    <button onclick="navigate('courses')" class="text-sm text-brand-600 hover:underline mb-3">← All Courses</button>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 mb-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-[11px] font-mono text-slate-500">${c.code}</div>
+          <h1 class="text-xl sm:text-2xl font-extrabold">${c.title}</h1>
+          <div class="text-xs text-slate-500 mt-1">${c.level}</div>
+        </div>
+        <button onclick="toggleBookmark('${c.id}','course','${esc(c.title)}')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" title="Bookmark">${isBookmarked(c.id)?'🔖':'☆'}</button>
+      </div>
+      <p class="text-sm text-slate-600 dark:text-slate-400 mt-3">${c.desc}</p>
+      <div class="mt-4">
+        <div class="flex justify-between text-[11px] text-slate-500 mb-1"><span>Course Progress</span><span>${pct}%</span></div>
+        <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div class="h-full bg-brand-600" style="width:${pct}%"></div></div>
+      </div>
+    </div>
+
+    <div class="flex gap-1 overflow-x-auto no-scrollbar pb-1 mb-4">
+      ${tabs.map(t=>`
+        <button onclick="navigate('course',{id:'${c.id}',tab:'${t.id}'})" class="whitespace-nowrap px-3 py-2 rounded-xl text-xs font-semibold ${activeTab===t.id?'bg-brand-600 text-white':'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'}">${t.label}</button>
+      `).join('')}
+    </div>
+
+    ${tabContent()}
+  `);
+}
+
+/* ---- TOPIC / HANDOUT ---- */
+function viewTopic(params){
+  const t = getTopic(params.id);
+  if(!t) return layout(`<div class="rounded-2xl bg-white dark:bg-slate-900 border p-6 text-center text-slate-500">Topic not found.</div>`);
+  const c = getCourse(t.course);
+  const done = state.progress[t.id]?.completed;
+  const relQs = questions.filter(q=>q.topic===t.id);
+
+  return layout(`
+    <button onclick="navigate('course',{id:'${t.course}'})" class="text-sm text-brand-600 hover:underline mb-3">← ${c?.title||'Course'}</button>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 mb-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-[11px] text-slate-500">${c?.title||''} • ${t.difficulty} • ${t.time}</div>
+          <h1 class="text-xl sm:text-2xl font-extrabold">${t.title}</h1>
+        </div>
+        <button onclick="toggleBookmark('${t.id}','topic','${esc(t.title)}')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">${isBookmarked(t.id)?'🔖':'☆'}</button>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button onclick="markTopicDone('${t.id}')" class="px-4 py-2 rounded-xl ${done?'bg-green-600':'bg-brand-600 hover:bg-brand-700'} text-white text-sm font-semibold">${done?'✓ Completed':'Mark as Completed'}</button>
+        <button onclick="navigate('practice',{topic:'${t.id}'})" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold hover:bg-slate-200">❓ Practice</button>
+        <button onclick="navigate('burning')" class="px-4 py-2 rounded-xl bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 text-sm font-semibold">🔥 Burning Brain</button>
+      </div>
+    </div>
+
+    <article class="handout rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 sm:p-7 text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+      <div class="mb-4">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Learning Objectives</h2>
+        <ul class="mt-2">${t.objectives.map(o=>`<li>${o}</li>`).join('')}</ul>
+      </div>
+      ${t.sections.map(s=>`
+        <section>
+          <h3 class="text-slate-900 dark:text-slate-100">${s.h}</h3>
+          ${s.p?`<p>${s.p}</p>`:''}
+          ${s.div?`<div class="def">${s.div}</div>`:''}
+          ${s.ul?`<ul>${s.ul.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}
+          ${s.ol?`<ol>${s.ol.map(x=>`<li>${x}</li>`).join('')}</ol>`:''}
+        </section>
+      `).join('')}
+      ${relQs.length?`
+      <div class="mt-6 p-4 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800">
+        <h3 class="text-slate-900 dark:text-slate-100">Review Questions</h3>
+        <p class="text-xs mb-2">Test yourself on this topic:</p>
+        <button onclick="navigate('practice',{topic:'${t.id}'})" class="px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-semibold">Start ${relQs.length} practice question${relQs.length>1?'s':''}</button>
+      </div>`:''}
+    </article>
+  `);
+}
+
+function markTopicDone(id){
+  state.progress[id] = { completed:true, ts: Date.now() };
+  checkStreak(); saveState();
+  toast('Topic marked as completed ✓');
+  render();
+}
+
+/* ---- QUESTION LIST & PRACTICE ---- */
+function questionList(qs, title){
+  if(!qs.length) return emptyBlock('No questions available here yet.');
+  return `
+  <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+    <h3 class="font-bold mb-3">${title} <span class="text-xs font-normal text-slate-500">(${qs.length})</span></h3>
+    <div class="space-y-2">
+      ${qs.map((q,i)=>`
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
+          <div class="flex items-start justify-between gap-2">
+            <div class="text-xs font-semibold text-slate-500">${qBadge(q.type)} • ${q.difficulty}</div>
+            <button onclick="toggleBookmark('${q.id}','question','${esc(q.q.slice(0,40))}')" class="text-slate-400 hover:text-brand-600">${isBookmarked(q.id)?'🔖':'☆'}</button>
+          </div>
+          <div class="text-sm font-medium mt-1">${i+1}. ${esc(q.q)}</div>
+          <div class="mt-2 text-xs text-slate-500">Topic: ${getTopic(q.topic)?.title||'—'}</div>
+        </div>
+      `).join('')}
+    </div>
+    <button onclick="navigate('practice',{course:'${qs[0].course}'})" class="mt-4 w-full py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm">Start Interactive Practice</button>
+  </div>`;
+}
+
+function qBadge(type){
+  const map = {
+    authentic_past_question:'<span class="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">AUTHENTIC PAST QUESTION</span>',
+    practice_question:'<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">PRACTICE</span>',
+    high_yield_question:'<span class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">HIGH-YIELD</span>',
+    burning_brain:'<span class="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300">🔥 BURNING BRAIN</span>',
+    clinical_scenario:'<span class="px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300">CLINICAL</span>',
+    practical_question:'<span class="px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300">PRACTICAL</span>'
+  };
+  return map[type] || map.practice_question;
+}
+
+function emptyBlock(msg){
+  return `<div class="rounded-2xl bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center text-slate-500 text-sm">${msg}</div>`;
+}
+
+/* ---- PRACTICE ENGINE ---- */
+let practiceSession = null;
+
+function viewPractice(params){
+  let pool = [];
+  let title = 'Practice';
+  if(params.topic){ pool = questions.filter(q=>q.topic===params.topic); title = `Practice — ${getTopic(params.topic)?.title||''}`; }
+  else if(params.course){ pool = questions.filter(q=>q.course===params.course); title = `Practice — ${getCourse(params.course)?.title||''}`; }
+  else if(params.ids){ pool = params.ids.map(id=>questions.find(q=>q.id===id)).filter(Boolean); title = params.title || 'Practice'; }
+  else if(params.type){ pool = questions.filter(q=>q.type===params.type); title = params.title || 'Practice'; }
+  else { pool = questions; title = 'All Questions Practice'; }
+
+  if(!pool.length) return layout(emptyBlock('No questions found for this selection.'));
+  pool = shuffle(pool).slice(0, Math.min(pool.length, params.limit || pool.length));
+
+  if(!practiceSession || practiceSession.key !== (params.topic||params.course||params.type||'all')){
+    practiceSession = { key: params.topic||params.course||params.type||'all', idx:0, pool, answers:{}, revealed:{} };
+  }
+  return layout(renderPractice(title));
+}
+
+function renderPractice(title){
+  const s = practiceSession;
+  const q = s.pool[s.idx];
+  if(!q) return emptyBlock('No question.');
+  const chosen = s.answers[q.id];
+  const revealed = s.revealed[q.id];
+  return `
+    <div class="flex items-center justify-between mb-3">
+      <button onclick="navigate('courses')" class="text-sm text-brand-600 hover:underline">← Back</button>
+      <div class="text-xs text-slate-500">${s.idx+1} / ${s.pool.length}</div>
+    </div>
+    <div class="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-4"><div class="h-full bg-brand-600 transition-all" style="width:${((s.idx+1)/s.pool.length)*100}%"></div></div>
+
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+      <div class="flex flex-wrap gap-2 mb-3">${qBadge(q.type)}<span class="text-[11px] text-slate-500">${q.difficulty} • ${getTopic(q.topic)?.title||''}</span></div>
+      <div class="font-semibold text-base mb-4">${esc(q.q)}</div>
+      <div class="space-y-2">
+        ${q.options.map((o,i)=>`
+          <button onclick="answerPractice('${q.id}',${i})" ${revealed?'disabled':''} class="w-full text-left p-3 rounded-xl border ${revealed?(i===q.correct?'border-green-500 bg-green-50 dark:bg-green-900/20':(i===chosen?'border-red-500 bg-red-50 dark:bg-red-900/20':'border-slate-200 dark:border-slate-800')):(chosen===i?'border-brand-500 bg-brand-50 dark:bg-brand-900/20':'border-slate-200 dark:border-slate-800 hover:border-brand-400')} text-sm">
+            <span class="font-bold mr-2">${String.fromCharCode(65+i)}.</span>${esc(o)}
+          </button>
+        `).join('')}
+      </div>
+
+      ${revealed?`
+        <div class="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-sm">
+          <div class="font-bold ${chosen===q.correct?'text-green-600':'text-red-600'} mb-2">${chosen===q.correct?'✓ Correct':'✗ Incorrect'}</div>
+          <div class="font-semibold mb-1">Explanation</div>
+          <p class="text-slate-600 dark:text-slate-400">${esc(q.explanation)}</p>
+          <div class="font-semibold mt-3 mb-1">Why other options are wrong</div>
+          <ul class="list-disc pl-5 text-slate-600 dark:text-slate-400">${q.whyOthers.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>
+          ${q.exam?`<div class="mt-3 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 text-xs"><strong>Exam focus:</strong> ${esc(q.exam)}</div>`:''}
+        </div>
+      `:''}
+
+      <div class="mt-4 flex gap-2">
+        <button onclick="practicePrev()" ${s.idx===0?'disabled':''} class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold disabled:opacity-40">← Previous</button>
+        <button onclick="practiceNext()" class="px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-semibold">${s.idx===s.pool.length-1?'Finish':'Next →'}</button>
+      </div>
+    </div>
+  `;
+}
+
+function answerPractice(qid, choice){
+  const s = practiceSession;
+  if(s.revealed[qid]) return;
+  s.answers[qid] = choice;
+  s.revealed[qid] = true;
+  const q = s.pool.find(x=>x.id===qid);
+  state.practiceHistory.unshift({ id:qid, correct: choice===q.correct, ts:Date.now(), course:q.course, topic:q.topic });
+  if(state.practiceHistory.length>500) state.practiceHistory = state.practiceHistory.slice(0,500);
+  checkStreak(); saveState();
+  render();
+}
+function practicePrev(){ if(practiceSession.idx>0){ practiceSession.idx--; render(); } }
+function practiceNext(){ if(practiceSession.idx < practiceSession.pool.length-1){ practiceSession.idx++; render(); } else { toast('Practice session complete'); navigate('performance'); } }
+
+/* ---- PAST QUESTIONS PAGE ---- */
+function viewPast(){
+  const past = questions.filter(q=>q.type==='authentic_past_question');
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">📝 Past Questions</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Verified authentic past questions appear here with full source metadata. Unverified items are clearly labelled as practice.</p>
+    <div class="mb-5 p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-sm">
+      <div class="font-bold text-blue-800 dark:text-blue-300 mb-1">About Authentic Past Questions</div>
+      <p class="text-blue-900/80 dark:text-blue-200/80 text-xs">Only questions that can be independently traced to a reliable published source are labelled "AUTHENTIC PAST QUESTION". All others are labelled as practice. This version contains a limited number of strictly verified items; most content is practice and high-yield material.</p>
+    </div>
+    ${past.length?questionList(past,'Authentic Past Questions'):emptyBlock('No fully verified authentic past questions are currently bundled. Use the practice and high-yield question banks — they are curriculum-aligned and exam-style.')}
+    <div class="mt-4">
+      <h2 class="font-bold mb-2">All Practice & High-Yield Questions</h2>
+      ${questionList(questions.filter(q=>q.type!=='authentic_past_question').slice(0,40),'Practice Library (preview)')}
+      <button onclick="navigate('practice')" class="mt-3 w-full py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm">Practice All Questions</button>
+    </div>
+  `);
+}
+
+/* ---- BURNING BRAIN ---- */
+function viewBurning(){
+  const bq = questions.filter(q=>q.type==='burning_brain');
+  return layout(`
+    <div class="rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-white p-5 mb-5">
+      <h1 class="text-xl sm:text-2xl font-extrabold">🔥 BURNING BRAIN</h1>
+      <p class="text-sm text-orange-50 mt-2">Advanced application, analysis and clinical reasoning questions designed to test true understanding of Community Health practice.</p>
+      <div class="mt-4 flex gap-2">
+        <button onclick="navigate('practice',{type:'burning_brain',title:'🔥 Burning Brain'})" class="px-4 py-2.5 rounded-xl bg-white text-red-700 font-semibold text-sm">Start Burning Brain Practice</button>
+      </div>
+    </div>
+    ${bq.length?questionList(bq,'Burning Brain Question Bank'):emptyBlock('No Burning Brain questions available yet.')}
+  `);
+}
+
+/* ---- HIGH YIELD ---- */
+function viewHighYield(){
+  const hy = questions.filter(q=>q.type==='high_yield_question');
+  return layout(`
+    <div class="rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white p-5 mb-5">
+      <h1 class="text-xl sm:text-2xl font-extrabold">🎯 2026–2028 HIGH-YIELD PRACTICE</h1>
+      <p class="text-sm text-amber-50 mt-2">Questions selected from important curriculum concepts, frequently tested themes and clinical priorities.</p>
+      <p class="text-[11px] text-amber-100 mt-3 bg-black/20 rounded-lg p-2">Disclaimer: These are educational practice questions based on curriculum and high-yield concepts. They are not leaked examination questions and do not guarantee what will appear in future examinations.</p>
+    </div>
+    ${hy.length?questionList(hy,'High-Yield Practice Questions'):emptyBlock('No high-yield questions available yet.')}
+  `);
+}
+
+/* ---- CLINICAL SCENARIOS ---- */
+function viewClinical(){
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">🩺 Clinical Scenario Trainer</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Realistic cases with connected questions to build clinical reasoning within Community Health scope.</p>
+    ${clinicalScenarios.length?`<div class="space-y-3">${clinicalScenarios.map(s=>`
+      <button onclick="navigate('scenario',{id:'${s.id}'})" class="w-full text-left rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400 p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="font-bold">🩺 ${s.title}</div>
+            <div class="text-[11px] text-slate-500 mt-1">${getCourse(s.course)?.title||''} • ${s.difficulty}</div>
+            <p class="text-xs text-slate-500 mt-2 line-clamp-2">${s.case}</p>
+          </div>
+          <span class="text-slate-400">→</span>
+        </div>
+      </button>`).join('')}</div>`:emptyBlock('No clinical scenarios available yet.')}
+  `);
+}
+
+/* ---- SCENARIO DETAIL ---- */
+let scenarioSession = null;
+function viewScenario(params){
+  const s = clinicalScenarios.find(x=>x.id===params.id);
+  if(!s) return layout(emptyBlock('Scenario not found.'));
+  if(!scenarioSession || scenarioSession.id!==s.id){ scenarioSession = { id:s.id, idx:0, answers:{}, revealed:{} }; }
+  const q = s.questions[scenarioSession.idx];
+  const chosen = scenarioSession.answers[scenarioSession.idx];
+  const revealed = scenarioSession.revealed[scenarioSession.idx];
+  return layout(`
+    <button onclick="navigate('clinical')" class="text-sm text-brand-600 hover:underline mb-3">← Clinical Scenarios</button>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 mb-4">
+      <h1 class="font-extrabold text-lg">🩺 ${s.title}</h1>
+      <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">${s.case}</p>
+      <div class="text-[11px] text-slate-500 mt-2">${getCourse(s.course)?.title||''} • ${s.difficulty} • Question ${scenarioSession.idx+1} of ${s.questions.length}</div>
+    </div>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+      <div class="font-semibold mb-3">${esc(q.q)}</div>
+      <div class="space-y-2">
+        ${q.options.map((o,i)=>`
+          <button onclick="answerScenario(${i})" ${revealed?'disabled':''} class="w-full text-left p-3 rounded-xl border text-sm ${revealed?(i===q.correct?'border-green-500 bg-green-50 dark:bg-green-900/20':(i===chosen?'border-red-500 bg-red-50 dark:bg-red-900/20':'border-slate-200 dark:border-slate-800')):'border-slate-200 dark:border-slate-800 hover:border-brand-400'}">
+            <span class="font-bold mr-2">${String.fromCharCode(65+i)}.</span>${esc(o)}
+          </button>
+        `).join('')}
+      </div>
+      ${revealed?`
+        <div class="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-sm">
+          <div class="font-bold ${chosen===q.correct?'text-green-600':'text-red-600'} mb-2">${chosen===q.correct?'✓ Correct':'✗ Incorrect'}</div>
+          <p class="text-slate-600 dark:text-slate-400">${esc(q.explanation)}</p>
+          <div class="font-semibold mt-3 mb-1">Why others are wrong</div>
+          <ul class="list-disc pl-5 text-slate-600 dark:text-slate-400">${q.whyOthers.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>
+          ${q.clinical?`<div class="mt-3 p-2 rounded-lg bg-teal-50 dark:bg-teal-900/20 text-teal-800 dark:text-teal-300 text-xs"><strong>Clinical point:</strong> ${esc(q.clinical)}</div>`:''}
+        </div>
+      `:''}
+      <div class="mt-4 flex gap-2">
+        <button onclick="scenarioNav(-1)" ${scenarioSession.idx===0?'disabled':''} class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold disabled:opacity-40">← Previous</button>
+        <button onclick="scenarioNav(1)" class="px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-semibold">${scenarioSession.idx===s.questions.length-1?'Finish':'Next →'}</button>
+      </div>
+    </div>
+  `);
+}
+function answerScenario(choice){
+  const s = clinicalScenarios.find(x=>x.id===scenarioSession.id);
+  const q = s.questions[scenarioSession.idx];
+  if(scenarioSession.revealed[scenarioSession.idx]) return;
+  scenarioSession.answers[scenarioSession.idx] = choice;
+  scenarioSession.revealed[scenarioSession.idx] = true;
+  checkStreak(); saveState();
+  render();
+}
+function scenarioNav(d){
+  const s = clinicalScenarios.find(x=>x.id===scenarioSession.id);
+  if(scenarioSession.idx + d >= 0 && scenarioSession.idx + d < s.questions.length){ scenarioSession.idx += d; render(); }
+  else if(d>0){ toast('Scenario complete'); navigate('clinical'); }
+}
+
+/* ---- PRACTICAL SKILLS ---- */
+function viewSkills(){
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">🩺 Practical Skills Trainer</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Step-by-step procedures, precautions, documentation and exam points for Community Health practice.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      ${practicalSkills.map(s=>`
+        <button onclick="navigate('skill',{id:'${s.id}'})" class="text-left rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400 p-4">
+          <div class="font-bold text-sm">🩺 ${s.title}</div>
+          <div class="text-[11px] text-slate-500 mt-1">${getCourse(s.course)?.title||''}</div>
+          <p class="text-xs text-slate-500 mt-2 line-clamp-2">${s.purpose}</p>
+        </button>
+      `).join('')}
+    </div>
+  `);
+}
+function viewSkill(params){
+  const s = practicalSkills.find(x=>x.id===params.id);
+  if(!s) return layout(emptyBlock('Skill not found.'));
+  return layout(`
+    <button onclick="navigate('skills')" class="text-sm text-brand-600 hover:underline mb-3">← Practical Skills</button>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 sm:p-7 text-sm text-slate-700 dark:text-slate-300">
+      <div class="flex items-start justify-between gap-3">
+        <h1 class="text-xl font-extrabold">🩺 ${s.title}</h1>
+        <button onclick="toggleBookmark('${s.id}','skill','${esc(s.title)}')" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">${isBookmarked(s.id)?'🔖':'☆'}</button>
+      </div>
+      <div class="mt-4 space-y-4">
+        <div><h3 class="font-bold text-slate-900 dark:text-slate-100">Purpose</h3><p>${s.purpose}</p></div>
+        <div><h3 class="font-bold text-slate-900 dark:text-slate-100">Equipment</h3><ul class="list-disc pl-5">${s.equipment.map(e=>`<li>${e}</li>`).join('')}</ul></div>
+        <div><h3 class="font-bold text-slate-900 dark:text-slate-100">Preparation</h3><p>${s.preparation}</p></div>
+        <div><h3 class="font-bold text-slate-900 dark:text-slate-100">Procedure</h3><ol class="list-decimal pl-5">${s.procedure.map(p=>`<li>${p}</li>`).join('')}</ol></div>
+        <div><h3 class="font-bold text-slate-900 dark:text-slate-100">Precautions</h3><ul class="list-disc pl-5">${s.precautions.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+        <div><h3 class="font-bold text-slate-900 dark:text-slate-100">Common Mistakes</h3><ul class="list-disc pl-5">${s.commonMistakes.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+        <div><h3 class="font-bold text-slate-900 dark:text-slate-100">Documentation</h3><p>${s.documentation}</p></div>
+        <div><h3 class="font-bold text-slate-900 dark:text-slate-100">When to Refer / Seek Supervision</h3><p>${s.whenToRefer}</p></div>
+        <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20"><h3 class="font-bold text-amber-800 dark:text-amber-300">Practical Exam Points</h3><ul class="list-disc pl-5 text-amber-900/80 dark:text-amber-200/80">${s.examPoints.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+      </div>
+    </div>
+  `);
+}
+
+/* ---- CBT SYSTEM ---- */
+let cbtRuntime = null;
+
+function viewCBT(){
+  const q = questions.length;
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">🎓 CBT Examination System</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Realistic, timed Computer-Based Test simulation with question navigator, flagging, review and analytics.</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+      <button onclick="startCBT('mock')" class="text-left rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 text-white p-5 shadow">
+        <div class="font-bold">🎓 Full Mock Professional Exam</div>
+        <div class="text-xs text-purple-100 mt-1">Comprehensive timed CBT</div>
+        <div class="text-[11px] mt-3 bg-white/15 inline-block px-2 py-0.5 rounded-full">Recommended</div>
+      </button>
+      <button onclick="startCBT('random')" class="text-left rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+        <div class="font-bold">🔀 Random CBT</div>
+        <div class="text-xs text-slate-500 mt-1">Randomised from full bank</div>
+      </button>
+      <button onclick="startCBT('burning')" class="text-left rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+        <div class="font-bold">🔥 Burning Brain CBT</div>
+        <div class="text-xs text-slate-500 mt-1">Advanced reasoning only</div>
+      </button>
+      <button onclick="startCBT('highyield')" class="text-left rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+        <div class="font-bold">🎯 High-Yield CBT</div>
+        <div class="text-xs text-slate-500 mt-1">High-yield practice questions</div>
+      </button>
+    </div>
+
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+      <h3 class="font-bold mb-2">Course CBT</h3>
+      <p class="text-sm text-slate-500 mb-3">Take a CBT focused on one course.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        ${courses.map(c=>`<button onclick="startCourseCBT('${c.id}')" class="text-left px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-brand-400 text-sm">${c.title}</button>`).join('')}
+      </div>
+    </div>
+
+    ${state.cbtHistory.length?`
+    <div class="mt-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+      <h3 class="font-bold mb-3">Recent CBT History</h3>
+      <div class="space-y-2">
+        ${state.cbtHistory.slice(0,8).map(h=>`
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800">
+            <div><div class="text-sm font-semibold">${esc(h.title)}</div><div class="text-[11px] text-slate-500">${new Date(h.date).toLocaleString()}</div></div>
+            <div class="text-right"><div class="font-bold ${h.pct>=50?'text-green-600':'text-red-600'}">${h.pct}%</div><div class="text-[11px] text-slate-500">${h.score}/${h.total}</div></div>
+          </div>`).join('')}
+      </div>
+    </div>`:''}
+  `);
+}
+
+function buildCBTQuestions(mode, courseId){
+  let pool;
+  if(mode==='mock'){ pool = questions.slice(); }
+  else if(mode==='random'){ pool = questions.slice(); }
+  else if(mode==='burning'){ pool = questions.filter(q=>q.type==='burning_brain'); }
+  else if(mode==='highyield'){ pool = questions.filter(q=>q.type==='high_yield_question'); }
+  else if(mode==='course'){ pool = questions.filter(q=>q.course===courseId); }
+  else pool = questions.slice();
+  pool = shuffle(pool);
+  const limit = mode==='mock'? Math.min(60, pool.length) : Math.min(30, pool.length);
+  return pool.slice(0, limit);
+}
+
+function startCBT(mode){
+  let qs = buildCBTQuestions(mode);
+  if(!qs.length){ toast('No questions available for this mode'); return; }
+  const titles = { mock:'Full Mock Professional Exam', random:'Random CBT', burning:'Burning Brain CBT', highyield:'High-Yield CBT' };
+  cbtRuntime = {
+    id: 'cbt_'+Date.now(),
+    title: titles[mode]||'CBT Examination',
+    mode,
+    questions: qs,
+    answers:{}, flags:{}, idx:0,
+    startedAt: Date.now(),
+    duration: qs.length * 60, // 1 min per question
+    submitted:false
+  };
+  navigate('cbt-run');
+}
+function startCourseCBT(courseId){
+  const c = getCourse(courseId);
+  let qs = buildCBTQuestions('course', courseId);
+  if(!qs.length){ toast('No questions for this course'); return; }
+  cbtRuntime = {
+    id:'cbt_'+Date.now(),
+    title:`CBT — ${c?.title||'Course'}`,
+    mode:'course', courseId,
+    questions: qs, answers:{}, flags:{}, idx:0,
+    startedAt: Date.now(), duration: qs.length*60, submitted:false
+  };
+  navigate('cbt-run');
+}
+
+let cbtTimerInterval = null;
+function viewCBTRun(){
+  if(!cbtRuntime) return layout(emptyBlock('No active CBT session. Start one from the CBT page.'));
+  if(cbtRuntime.submitted) return viewCBTResult();
+
+  const r = cbtRuntime;
+  const q = r.questions[r.idx];
+  const chosen = r.answers[q.id];
+  const flagged = r.flags[q.id];
+  const elapsed = Math.floor((Date.now()-r.startedAt)/1000);
+  const remaining = Math.max(0, r.duration - elapsed);
+
+  if(remaining<=0 && !r.submitted){ setTimeout(()=>submitCBT(true), 50); }
+
+  const navigator = `
+    <div class="mt-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3">
+      <div class="text-xs font-semibold text-slate-500 mb-2">Question Navigator</div>
+      <div class="grid grid-cols-6 sm:grid-cols-10 gap-1.5">
+        ${r.questions.map((qq,i)=>{
+          const ans = r.answers[qq.id]!==undefined;
+          const fl = r.flags[qq.id];
+          const cur = i===r.idx;
+          let cls = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+          if(ans) cls = 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300';
+          if(fl) cls = 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300';
+          if(cur) cls = 'bg-brand-600 text-white';
+          return `<button onclick="cbtJump(${i})" class="qnav-btn rounded-lg font-bold flex items-center justify-center ${cls}">${String(i+1).padStart(2,'0')}</button>`;
+        }).join('')}
+      </div>
+      <div class="mt-3 flex flex-wrap gap-3 text-[10px] text-slate-500">
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-brand-600 inline-block"></span>Current</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-green-200 inline-block"></span>Answered</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-200 inline-block"></span>Flagged</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-slate-200 inline-block"></span>Unanswered</span>
+      </div>
+    </div>`;
+
+  return layout(`
+    <div class="sticky top-14 z-30 -mx-3 sm:-mx-5 px-3 sm:px-5 py-2 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 mb-3">
+      <div class="min-w-0">
+        <div class="text-[10px] text-slate-500 truncate">AHMAD CHEW ACADEMY • CBT</div>
+        <div class="text-xs font-bold truncate">${esc(r.title)}</div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <div id="cbtTimer" class="font-mono text-sm font-bold px-2.5 py-1 rounded-lg ${remaining<60?'bg-red-100 text-red-700 animate-pulse':'bg-slate-100 dark:bg-slate-800'}">${fmtTime(remaining)}</div>
+        <button onclick="submitCBT(false)" class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold">Submit</button>
+      </div>
+    </div>
+
+    <div class="text-[11px] text-slate-500 mb-1">QUESTION ${String(r.idx+1).padStart(2,'0')} OF ${r.questions.length}</div>
+
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div class="font-semibold">${esc(q.q)}</div>
+        <button onclick="cbtFlag()" class="shrink-0 px-2 py-1 rounded-lg text-xs ${flagged?'bg-amber-100 text-amber-700':'bg-slate-100 dark:bg-slate-800 text-slate-500'}">${flagged?'⚑ Flagged':'⚐ Flag'}</button>
+      </div>
+      <div class="space-y-2">
+        ${q.options.map((o,i)=>`
+          <button onclick="cbtAnswer(${i})" class="cbt-opt w-full text-left p-3 rounded-xl border text-sm ${chosen===i?'border-brand-500 bg-brand-50 dark:bg-brand-900/20':'border-slate-200 dark:border-slate-800'}">
+            <span class="font-bold mr-2">${String.fromCharCode(65+i)}.</span>${esc(o)}
+          </button>
+        `).join('')}
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button onclick="cbtNav(-1)" ${r.idx===0?'disabled':''} class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold disabled:opacity-40">← Previous</button>
+        <button onclick="cbtNav(1)" class="px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-semibold">Next →</button>
+        <button onclick="cbtClear()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold">Clear Answer</button>
+      </div>
+    </div>
+    ${navigator}
+  `);
+
+  function _x(){}
+}
+
+function cbtAnswer(i){
+  if(!cbtRuntime) return;
+  cbtRuntime.answers[cbtRuntime.questions[cbtRuntime.idx].id] = i;
+  checkStreak(); saveState();
+  render();
+}
+function cbtClear(){ if(!cbtRuntime) return; delete cbtRuntime.answers[cbtRuntime.questions[cbtRuntime.idx].id]; render(); }
+function cbtFlag(){ if(!cbtRuntime) return; const id = cbtRuntime.questions[cbtRuntime.idx].id; cbtRuntime.flags[id] = !cbtRuntime.flags[id]; render(); }
+function cbtNav(d){ if(!cbtRuntime) return; const n = cbtRuntime.idx + d; if(n>=0 && n<cbtRuntime.questions.length){ cbtRuntime.idx = n; render(); } }
+function cbtJump(i){ if(!cbtRuntime) return; if(i>=0 && i<cbtRuntime.questions.length){ cbtRuntime.idx = i; render(); } }
+
+function submitCBT(auto){
+  if(!cbtRuntime) return;
+  const r = cbtRuntime;
+  const answered = Object.keys(r.answers).length;
+  const unanswered = r.questions.length - answered;
+  const flagged = Object.values(r.flags).filter(Boolean).length;
+  if(!auto){
+    const ok = confirm(`EXAM SUMMARY\n\nAnswered: ${answered}\nUnanswered: ${unanswered}\nFlagged: ${flagged}\nTotal: ${r.questions.length}\n\nAre you sure you want to submit your examination?`);
+    if(!ok) return;
+  }
+  r.submitted = true;
+  const correct = r.questions.filter(q=>r.answers[q.id]===q.correct).length;
+  const wrong = answered - correct;
+  const pct = Math.round((correct / r.questions.length)*100);
+  const timeUsed = Math.floor((Date.now()-r.startedAt)/1000);
+  const topicsMap = {};
+  r.questions.forEach(q=>{
+    const t = q.topic;
+    if(!topicsMap[t]) topicsMap[t] = {correct:0,total:0};
+    topicsMap[t].total++;
+    if(r.answers[q.id]===q.correct) topicsMap[t].correct++;
+  });
+  const record = { id:r.id, title:r.title, score:correct, total:r.questions.length, pct, timeUsed, date:Date.now(), topics:topicsMap, questions:r.questions, answers:r.answers };
+  state.cbtHistory.unshift(record);
+  if(state.cbtHistory.length>30) state.cbtHistory = state.cbtHistory.slice(0,30);
+  checkStreak(); saveState();
+  if(auto) toast('TIME EXPIRED — Examination auto-submitted');
+  render();
+}
+
+function viewCBTResult(){
+  const r = cbtRuntime;
+  if(!r || !r.submitted) return layout(emptyBlock('No result.'));
+  const correct = r.questions.filter(q=>r.answers[q.id]===q.correct).length;
+  const answered = Object.keys(r.answers).length;
+  const wrong = answered - correct;
+  const unanswered = r.questions.length - answered;
+  const pct = Math.round((correct/r.questions.length)*100);
+  const timeUsed = Math.floor((Date.now()-r.startedAt)/1000);
+  const flagged = Object.values(r.flags).filter(Boolean).length;
+  const topicStats = {};
+  r.questions.forEach(q=>{
+    const t = q.topic;
+    if(!topicStats[t]) topicStats[t] = {correct:0,total:0};
+    topicStats[t].total++;
+    if(r.answers[q.id]===q.correct) topicStats[t].correct++;
+  });
+  return layout(`
+    <div class="rounded-3xl bg-gradient-to-br ${pct>=70?'from-green-500 to-emerald-700':pct>=50?'from-amber-500 to-orange-600':'from-red-500 to-rose-700'} text-white p-6 sm:p-8 mb-5">
+      <div class="text-xs font-semibold text-white/80">EXAMINATION RESULT</div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold mt-1">${pct}%</h1>
+      <p class="text-sm text-white/90 mt-1">${esc(r.title)}</p>
+      <div class="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white/15 rounded-xl p-3"><div class="text-lg font-bold">${correct}</div><div class="text-[11px] text-white/80">Correct</div></div>
+        <div class="bg-white/15 rounded-xl p-3"><div class="text-lg font-bold">${wrong}</div><div class="text-[11px] text-white/80">Wrong</div></div>
+        <div class="bg-white/15 rounded-xl p-3"><div class="text-lg font-bold">${unanswered}</div><div class="text-[11px] text-white/80">Unanswered</div></div>
+        <div class="bg-white/15 rounded-xl p-3"><div class="text-lg font-bold">${flagged}</div><div class="text-[11px] text-white/80">Flagged</div></div>
+      </div>
+      <div class="mt-3 text-xs text-white/80">Time used: ${fmtTime(timeUsed)} • Time remaining: ${fmtTime(Math.max(0,r.duration-timeUsed))}</div>
+    </div>
+
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 mb-4">
+      <h3 class="font-bold mb-3">Performance by Topic</h3>
+      <div class="space-y-3">
+        ${Object.entries(topicStats).map(([tid,s])=>{
+          const p = Math.round((s.correct/s.total)*100);
+          return `<div>
+            <div class="flex justify-between text-xs mb-1"><span>${getTopic(tid)?.title||tid}</span><span class="font-semibold ${p>=60?'text-green-600':'text-red-600'}">${p}%</span></div>
+            <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div class="h-full ${p>=60?'bg-green-500':'bg-red-500'}" style="width:${p}%"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button onclick="reviewCBT()" class="px-4 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-semibold">Review Answers</button>
+      <button onclick="navigate('cbt')" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold">Back to CBT</button>
+      <button onclick="navigate('performance')" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-semibold">My Performance</button>
+    </div>
+  `);
+}
+
+function reviewCBT(){
+  const r = cbtRuntime;
+  if(!r || !r.submitted) return;
+  const html = `
+    <button onclick="navigate('cbt-result')" class="text-sm text-brand-600 hover:underline mb-3">← Back to Result</button>
+    <h1 class="text-xl font-extrabold mb-4">Answer Review — ${esc(r.title)}</h1>
+    <div class="space-y-3">
+      ${r.questions.map((q,i)=>{
+        const chosen = r.answers[q.id];
+        const ok = chosen===q.correct;
+        return `<div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="text-xs font-semibold text-slate-500">Q${i+1} • ${qBadge(q.type)}</div>
+            <div class="text-xs font-bold ${ok?'text-green-600':'text-red-600'}">${ok?'✓ Correct':chosen===undefined?'— Not answered':'✗ Wrong'}</div>
+          </div>
+          <div class="font-medium text-sm mb-2">${esc(q.q)}</div>
+          <div class="space-y-1 text-sm">
+            ${q.options.map((o,j)=>{
+              let cls = 'text-slate-600 dark:text-slate-400';
+              if(j===q.correct) cls = 'text-green-700 dark:text-green-400 font-semibold';
+              else if(j===chosen) cls = 'text-red-700 dark:text-red-400';
+              return `<div class="${cls}">${String.fromCharCode(65+j)}. ${esc(o)} ${j===chosen?'← your answer':''}</div>`;
+            }).join('')}
+          </div>
+          <div class="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
+            <div class="font-semibold mb-1">Explanation</div>
+            <p class="text-slate-600 dark:text-slate-400">${esc(q.explanation)}</p>
+            <div class="font-semibold mt-2 mb-1">Why others are wrong</div>
+            <ul class="list-disc pl-5 text-slate-600 dark:text-slate-400">${q.whyOthers.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  // render as a route
+  currentRoute = { name:'cbt-review', params:{} };
+  $('#app').innerHTML = layout(html);
+  window.scrollTo({top:0});
+}
+// expose for the result button
+window.reviewCBT = reviewCBT;
+
+/* ---- PERFORMANCE ---- */
+function viewPerformance(){
+  const hist = state.cbtHistory;
+  const totalExams = hist.length;
+  const avg = totalExams? Math.round(hist.reduce((a,h)=>a+h.pct,0)/totalExams) : 0;
+  const best = totalExams? Math.max(...hist.map(h=>h.pct)) : 0;
+  const practiceTotal = state.practiceHistory.length;
+  const practiceCorrect = state.practiceHistory.filter(p=>p.correct).length;
+  const accuracy = practiceTotal? Math.round((practiceCorrect/practiceTotal)*100) : 0;
+
+  // topic weakness
+  const topicAgg = {};
+  hist.forEach(h=>{
+    Object.entries(h.topics||{}).forEach(([tid,s])=>{
+      if(!topicAgg[tid]) topicAgg[tid] = {correct:0,total:0};
+      topicAgg[tid].correct += s.correct; topicAgg[tid].total += s.total;
+    });
+  });
+  const topicPerf = Object.entries(topicAgg).map(([tid,s])=>({tid, pct: Math.round((s.correct/s.total)*100), total:s.total})).filter(x=>x.total>=1);
+  topicPerf.sort((a,b)=>a.pct-b.pct);
+  const weak = topicPerf.filter(t=>t.pct<60).slice(0,5);
+  const strong = topicPerf.filter(t=>t.pct>=75).slice(-5).reverse();
+
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">📊 My Performance</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Analytics, weak-area detection and learning history.</p>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+      <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4"><div class="text-2xl font-extrabold text-brand-700 dark:text-brand-400">${totalExams}</div><div class="text-[11px] text-slate-500">CBT exams</div></div>
+      <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4"><div class="text-2xl font-extrabold text-brand-700 dark:text-brand-400">${avg}%</div><div class="text-[11px] text-slate-500">Avg score</div></div>
+      <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4"><div class="text-2xl font-extrabold text-brand-700 dark:text-brand-400">${best}%</div><div class="text-[11px] text-slate-500">Best score</div></div>
+      <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4"><div class="text-2xl font-extrabold text-brand-700 dark:text-brand-400">${accuracy}%</div><div class="text-[11px] text-slate-500">Practice accuracy</div></div>
+    </div>
+
+    ${weak.length?`
+    <div class="rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-5 mb-5">
+      <h3 class="font-bold text-red-800 dark:text-red-300 mb-2">⚠️ Weak Areas — focus here</h3>
+      <div class="space-y-2">
+        ${weak.map(t=>`
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm text-red-900 dark:text-red-200">${getTopic(t.tid)?.title||t.tid} <span class="text-[11px]">(${t.pct}%)</span></div>
+            <div class="flex gap-2">
+              <button onclick="navigate('practice',{topic:'${t.tid}'})" class="text-[11px] px-2 py-1 rounded-lg bg-white dark:bg-slate-800 font-semibold">Practice</button>
+              <button onclick="navigate('topic',{id:'${t.tid}'})" class="text-[11px] px-2 py-1 rounded-lg bg-white dark:bg-slate-800 font-semibold">Review</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`:''}
+
+    ${strong.length?`
+    <div class="rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-5 mb-5">
+      <h3 class="font-bold text-green-800 dark:text-green-300 mb-2">✓ Strong Topics</h3>
+      <div class="flex flex-wrap gap-2">
+        ${strong.map(t=>`<span class="text-xs px-2 py-1 rounded-lg bg-white dark:bg-slate-800">${getTopic(t.tid)?.title||t.tid} — ${t.pct}%</span>`).join('')}
+      </div>
+    </div>`:''}
+
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5">
+      <h3 class="font-bold mb-3">CBT History</h3>
+      ${hist.length? `<div class="space-y-2">${hist.map(h=>`
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800">
+          <div><div class="text-sm font-semibold">${esc(h.title)}</div><div class="text-[11px] text-slate-500">${new Date(h.date).toLocaleString()} • ${fmtTime(h.timeUsed||0)}</div></div>
+          <div class="text-right"><div class="font-bold ${h.pct>=50?'text-green-600':'text-red-600'}">${h.pct}%</div><div class="text-[11px] text-slate-500">${h.score}/${h.total}</div></div>
+        </div>`).join('')}</div>` : emptyBlock('No CBT exams yet.')}
+    </div>
+  `);
+}
+
+/* ---- DAILY CHALLENGE ---- */
+function viewDaily(){
+  const day = new Date().getDate() + new Date().getMonth()*31;
+  const q1 = questions[day % questions.length];
+  const challenge = shuffle(questions).slice(0,5);
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">📅 Daily Challenge</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Question of the day, a 5-question challenge and a quick revision point.</p>
+
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 mb-4">
+      <div class="text-[11px] font-semibold text-brand-600">QUESTION OF THE DAY</div>
+      <div class="font-semibold mt-2">${esc(q1.q)}</div>
+      <div class="mt-3 space-y-2">
+        ${q1.options.map((o,i)=>`
+          <button onclick="dailyAnswer(this,${i},${q1.correct})" class="w-full text-left p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-sm hover:border-brand-400">
+            <span class="font-bold mr-2">${String.fromCharCode(65+i)}.</span>${esc(o)}
+          </button>`).join('')}
+      </div>
+    </div>
+
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 mb-4">
+      <h3 class="font-bold mb-2">Quick Revision Point</h3>
+      <p class="text-sm text-slate-600 dark:text-slate-400">Primary Health Care was declared at the Alma-Ata Conference in <strong>1978</strong>. Its goal: <em>Health for All by the Year 2000</em>. The 8 components remain a high-yield exam topic — know them all.</p>
+    </div>
+
+    <button onclick="navigate('practice',{ids:${JSON.stringify(challenge.map(q=>q.id))},title:'📅 Daily 5-Question Challenge',limit:5})" class="w-full py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-bold">Start 5-Question Challenge</button>
+  `);
+}
+function dailyAnswer(el, chosen, correct){
+  if(el.dataset.done) return;
+  el.dataset.done = '1';
+  const opts = el.parentElement.querySelectorAll('button');
+  opts.forEach((b,i)=>{ b.disabled = true; if(i===correct) b.classList.add('border-green-500','bg-green-50','dark:bg-green-900/20'); else if(i===chosen) b.classList.add('border-red-500','bg-red-50','dark:bg-red-900/20'); });
+  checkStreak(); saveState();
+}
+
+/* ---- BOOKMARKS ---- */
+function viewBookmarks(){
+  const b = state.bookmarks;
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">🔖 My Bookmarks</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Saved topics, questions, scenarios and skills.</p>
+    ${b.length? `<div class="space-y-2">${b.map(item=>{
+      let go = '';
+      if(item.type==='topic') go = `navigate('topic',{id:'${item.id}'})`;
+      else if(item.type==='course') go = `navigate('course',{id:'${item.id}'})`;
+      else if(item.type==='scenario') go = `navigate('scenario',{id:'${item.id}'})`;
+      else if(item.type==='skill') go = `navigate('skill',{id:'${item.id}'})`;
+      else if(item.type==='question') go = `navigate('practice',{ids:['${item.id}'],title:'Bookmarked Question',limit:1})`;
+      return `<div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <button onclick="${go}" class="text-left min-w-0 flex-1">
+          <div class="text-[11px] text-slate-500 uppercase">${item.type}</div>
+          <div class="font-semibold text-sm truncate">${esc(item.title)}</div>
+        </button>
+        <button onclick="removeBookmark('${item.id}')" class="text-red-500 text-sm">✕</button>
+      </div>`;
+    }).join('')}</div>` : emptyBlock('No bookmarks yet. Tap ☆ on any topic, question or skill to save it here.')}
+  `);
+}
+function removeBookmark(id){ const i = state.bookmarks.findIndex(b=>b.id===id); if(i>=0){ state.bookmarks.splice(i,1); saveState(); render(); } }
+window.removeBookmark = removeBookmark;
+
+/* ---- SEARCH ---- */
+function viewSearch(){
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">🔍 Search</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Search courses, topics, handouts, questions and skills.</p>
+    <input id="searchInput" oninput="doSearch(this.value)" placeholder="Type a keyword… e.g. malaria, PHC, MUAC" class="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm outline-none focus:border-brand-500" />
+    <div id="searchResults" class="mt-5 space-y-3"></div>
+  `);
+}
+function doSearch(term){
+  const box = $('#searchResults');
+  term = term.trim().toLowerCase();
+  if(!term){ box.innerHTML = '<div class="text-sm text-slate-500 text-center py-6">Start typing to search…</div>'; return; }
+  const rCourses = courses.filter(c=> (c.title+c.desc+c.code).toLowerCase().includes(term));
+  const rTopics = topics.filter(t=> (t.title + t.objectives.join(' ') + t.sections.map(s=>(s.h||'')+(s.p||'')+(s.ul||[]).join('')+(s.ol||[]).join('')+(s.div||'')).join(' ')).toLowerCase().includes(term));
+  const rQuestions = questions.filter(q=> (q.q + q.options.join(' ') + q.explanation).toLowerCase().includes(term)).slice(0,20);
+  const rSkills = practicalSkills.filter(s=> (s.title+s.purpose).toLowerCase().includes(term));
+  const rScen = clinicalScenarios.filter(s=> (s.title+s.case).toLowerCase().includes(term));
+
+  const sec = (title, items, renderer) => items.length? `
+    <div>
+      <h3 class="text-xs font-bold uppercase text-slate-500 mb-2">${title} (${items.length})</h3>
+      <div class="space-y-2">${items.map(renderer).join('')}</div>
+    </div>` : '';
+
+  box.innerHTML =
+    sec('Courses', rCourses, c=>`<button onclick="navigate('course',{id:'${c.id}'})" class="w-full text-left p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400"><div class="font-semibold text-sm">${c.title}</div><div class="text-[11px] text-slate-500">${c.code}</div></button>`) +
+    sec('Topics', rTopics, t=>`<button onclick="navigate('topic',{id:'${t.id}'})" class="w-full text-left p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400"><div class="font-semibold text-sm">${t.title}</div><div class="text-[11px] text-slate-500">${getCourse(t.course)?.title||''}</div></button>`) +
+    sec('Questions', rQuestions, q=>`<button onclick="navigate('practice',{ids:['${q.id}'],title:'Search Result',limit:1})" class="w-full text-left p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400"><div class="text-sm">${esc(q.q.slice(0,90))}${q.q.length>90?'…':''}</div><div class="text-[11px] text-slate-500">${getTopic(q.topic)?.title||''}</div></button>`) +
+    sec('Practical Skills', rSkills, s=>`<button onclick="navigate('skill',{id:'${s.id}'})" class="w-full text-left p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400"><div class="font-semibold text-sm">${s.title}</div></button>`) +
+    sec('Clinical Scenarios', rScen, s=>`<button onclick="navigate('scenario',{id:'${s.id}'})" class="w-full text-left p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand-400"><div class="font-semibold text-sm">${s.title}</div></button>`);
+
+  if(!box.innerHTML.trim()) box.innerHTML = '<div class="text-sm text-slate-500 text-center py-6">No results found.</div>';
+}
+window.doSearch = doSearch;
+
+/* ---- SOURCES / ABOUT / DISCLAIMER / MORE ---- */
+function viewSources(){
+  const cats = ['Official','Curriculum','Clinical','Educational'];
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-1">📚 Sources & References</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Educational content in this app is aligned with the following authoritative sources where possible. No fake URLs are used.</p>
+    ${cats.map(cat=>{
+      const items = sources.filter(s=>s.category===cat);
+      if(!items.length) return '';
+      return `<div class="mb-5"><h3 class="font-bold mb-2">${cat}</h3><div class="space-y-2">
+        ${items.map(s=>`<div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <div class="font-semibold text-sm">${s.name}</div>
+          <div class="text-xs text-slate-500 mt-1">${s.desc}</div>
+          <a href="${s.url}" target="_blank" rel="noopener" class="text-xs text-brand-600 hover:underline mt-1 inline-block">${s.url}</a>
+        </div>`).join('')}
+      </div></div>`;
+    }).join('')}
+    <div class="rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 text-xs text-amber-900 dark:text-amber-200">
+      <strong>Limitation:</strong> This is a static educational version 1. Where a current official curriculum document could not be independently verified at build time, content is labelled as practice/high-yield and not presented as official. Always confirm with current CHPRBN curriculum documents and your institution.
+    </div>
+  `);
+}
+function viewAbout(){
+  return layout(`
+    <div class="rounded-3xl bg-gradient-to-br from-brand-600 to-emerald-800 text-white p-6 sm:p-8 mb-5">
+      <h1 class="text-2xl sm:text-3xl font-extrabold">AHMAD CHEW ACADEMY</h1>
+      <p class="text-sm text-brand-50 mt-1">By Ahmad Sani</p>
+    </div>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 text-sm text-slate-600 dark:text-slate-400 space-y-3">
+      <p>AHMAD CHEW ACADEMY is an educational platform designed to support Community Health students (JCHEW / CHEW) through digital learning, handouts, practice questions, past-question study, CBT preparation, clinical learning and performance improvement.</p>
+      <p>The platform follows the learning philosophy: <strong>LEARN → UNDERSTAND → PRACTICE → APPLY → TEST → ANALYZE → IMPROVE</strong>.</p>
+      <p>All content is educational and intended to complement — not replace — official CHPRBN curriculum documents, institutional teaching, professional supervision, authorised clinical guidelines and official examination instructions.</p>
+    </div>
+  `);
+}
+function viewDisclaimer(){
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-4">Disclaimer</h1>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 text-sm text-slate-600 dark:text-slate-400 space-y-3">
+      <p><strong>AHMAD CHEW ACADEMY is an educational study platform.</strong> It does not replace official CHPRBN curriculum documents, institutional teaching, professional supervision, authorised clinical guidelines or official examination instructions.</p>
+      <p><strong>Predicted/high-yield questions</strong> are educational practice and are not leaked or guaranteed examination questions.</p>
+      <p>Clinical information is provided within the educational scope of Community Health practice. Always work within your authorised scope, follow current national guidelines, and refer appropriately.</p>
+      <p>No personal data beyond locally stored learning progress is collected. No passwords are requested. Version 1 is fully static.</p>
+    </div>
+  `);
+}
+function viewMore(){
+  const items = [
+    {t:'📅 Daily Challenge', d:'Question of the day + 5-question quiz', go:"navigate('daily')"},
+    {t:'🔖 My Bookmarks', d:'Your saved items', go:"navigate('bookmarks')"},
+    {t:'🩺 Practical Skills', d:'Step-by-step procedures', go:"navigate('skills')"},
+    {t:'🎯 High-Yield Practice', d:'2026–2028 focused practice', go:"navigate('highyield')"},
+    {t:'🔥 Burning Brain', d:'Advanced reasoning questions', go:"navigate('burning')"},
+    {t:'📚 Sources & References', d:'Curriculum & clinical sources', go:"navigate('sources')"},
+    {t:'ℹ️ About', d:'About this platform', go:"navigate('about')"},
+    {t:'⚠️ Disclaimer', d:'Educational disclaimer', go:"navigate('disclaimer')"}
+  ];
+  return layout(`
+    <h1 class="text-xl sm:text-2xl font-extrabold mb-4">More</h1>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      ${items.map(i=>`<button onclick="${i.go}" class="text-left rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 hover:border-brand-400"><div class="font-bold text-sm">${i.t}</div><div class="text-xs text-slate-500 mt-0.5">${i.d}</div></button>`).join('')}
+    </div>
+  `);
+}
+
+/* ============================ 5. ROUTER / RENDER =========================== */
+
+function render(){
+  checkStreak();
+  const r = currentRoute;
+  let html = '';
+  switch(r.name){
+    case 'home': html = viewHome(); break;
+    case 'courses': html = viewCourses(); break;
+    case 'course': html = viewCourse(r.params); break;
+    case 'topic': html = viewTopic(r.params); break;
+    case 'practice': html = viewPractice(r.params); break;
+    case 'past': html = viewPast(); break;
+    case 'burning': html = viewBurning(); break;
+    case 'highyield': html = viewHighYield(); break;
+    case 'clinical': html = viewClinical(); break;
+    case 'scenario': html = viewScenario(r.params); break;
+    case 'skills': html = viewSkills(); break;
+    case 'skill': html = viewSkill(r.params); break;
+    case 'cbt': html = viewCBT(); break;
+    case 'cbt-run': html = viewCBTRun(); break;
+    case 'cbt-result': html = viewCBTResult(); break;
+    case 'performance': html = viewPerformance(); break;
+    case 'daily': html = viewDaily(); break;
+    case 'bookmarks': html = viewBookmarks(); break;
+    case 'search': html = viewSearch(); break;
+    case 'sources': html = viewSources(); break;
+    case 'about': html = viewAbout(); break;
+    case 'disclaimer': html = viewDisclaimer(); break;
+    case 'more': html = viewMore(); break;
+    default: html = viewHome();
+  }
+  document.documentElement.classList.toggle('dark', state.theme==='dark');
+  $('#app').innerHTML = html;
+  // restore search input value if on search
+  if(r.name==='search'){ const inp = $('#searchInput'); if(inp) inp.focus(); }
+  if(r.name==='cbt-run' && cbtRuntime && !cbtRuntime.submitted) startCBTTimer();
+}
+
+function startCBTTimer(){
+  clearInterval(cbtTimerInterval);
+  cbtTimerInterval = setInterval(()=>{
+    if(!cbtRuntime || cbtRuntime.submitted){ clearInterval(cbtTimerInterval); return; }
+    const remaining = Math.max(0, cbtRuntime.duration - Math.floor((Date.now()-cbtRuntime.startedAt)/1000));
+    const el = $('#cbtTimer');
+    if(el) el.textContent = fmtTime(remaining);
+    if(remaining<=0){ clearInterval(cbtTimerInterval); submitCBT(true); }
+  }, 1000);
+}
+
+function toggleTheme(){
+  state.theme = state.theme==='dark'?'light':'dark';
+  saveState();
+  render();
+}
+window.toggleTheme = toggleTheme;
+
+/* expose navigation & handlers to inline onclick */
+window.navigate = navigate;
+window.answerPractice = answerPractice;
+window.practicePrev = practicePrev;
+window.practiceNext = practiceNext;
+window.markTopicDone = markTopicDone;
+window.toggleBookmark = toggleBookmark;
+window.startCBT = startCBT;
+window.startCourseCBT = startCourseCBT;
+window.cbtAnswer = cbtAnswer;
+window.cbtClear = cbtClear;
+window.cbtFlag = cbtFlag;
+window.cbtNav = cbtNav;
+window.cbtJump = cbtJump;
+window.submitCBT = submitCBT;
+window.answerScenario = answerScenario;
+window.scenarioNav = scenarioNav;
+window.dailyAnswer = dailyAnswer;
+
+/* ============================ 6. BOOT ====================================== */
+render();
+</script>
+</body>
+  </html>
